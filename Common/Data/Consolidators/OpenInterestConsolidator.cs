@@ -49,7 +49,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Creates a consolidator to produce a new 'OpenInterest' representing the last count pieces of data
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         public OpenInterestConsolidator(int maxCount)
             : base(maxCount)
         {
@@ -58,7 +58,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Creates a consolidator to produce a new 'OpenInterest' representing the last count pieces of data or the period, whichever comes first
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
         public OpenInterestConsolidator(int maxCount, TimeSpan period)
             : base(maxCount, period)
@@ -66,7 +66,7 @@ namespace QuantConnect.Data.Consolidators
         }
 
         /// <summary>
-        /// Determines whether or not the specified data should be processd
+        /// Determines whether or not the specified data should be processed
         /// </summary>
         /// <param name="tick">The data to check</param>
         /// <returns>True if the consolidator should process this data, false otherwise</returns>

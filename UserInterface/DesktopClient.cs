@@ -16,7 +16,7 @@ namespace QuantConnect.Views
         /// This 0MQ Pull socket accepts certain messages from a 0MQ Push socket
         /// </summary>
         /// <param name="port">The port on which to listen</param>
-        /// <param name="handler">The handler which will display the repsonses</param>
+        /// <param name="handler">The handler which will display the responses</param>
         public void Run(string port, IDesktopMessageHandler handler)
         {
             //Allow proper decoding of orders.

@@ -30,7 +30,7 @@ namespace QuantConnect.VisualStudioPlugin
         private Api.Api _api;
 
         /// <summary>
-        /// Get singleton authorization manager instance accessable from multiple commands
+        /// Get singleton authorization manager instance accessible from multiple commands
         /// </summary>
         /// <returns>singleton authorization instance</returns>
         public static AuthorizationManager GetInstance()

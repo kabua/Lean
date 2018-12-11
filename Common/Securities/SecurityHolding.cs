@@ -336,7 +336,7 @@ namespace QuantConnect.Securities
         }
 
         /// <summary>
-        /// Gets the unrealized profit as a percenage of holdings cost
+        /// Gets the unrealized profit as a percentage of holdings cost
         /// </summary>
         public decimal UnrealizedProfitPercent
         {

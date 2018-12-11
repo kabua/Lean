@@ -79,7 +79,7 @@ namespace QuantConnect.Algorithm.CSharp
                     Insight.Price(_symbol, TimeSpan.FromDays(FastEmaPeriod), InsightDirection.Up)
                 );
 
-                // longterm says buy as well
+                // long term says buy as well
                 SetHoldings(_symbol, 1.0);
             }
             // if our macd is less than our signal, then let's go short
@@ -92,7 +92,7 @@ namespace QuantConnect.Algorithm.CSharp
                     Insight.Price(_symbol, TimeSpan.FromDays(FastEmaPeriod), InsightDirection.Down)
                 );
 
-                // shortterm says sell as well
+                // short term says sell as well
                 SetHoldings(_symbol, -1.0);
             }
 

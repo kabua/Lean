@@ -50,7 +50,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Creates a consolidator to produce a new 'TradeBar' representing the last count pieces of data
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         public TradeBarConsolidator(int maxCount)
             : base(maxCount)
         {
@@ -59,7 +59,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Creates a consolidator to produce a new 'TradeBar' representing the last count pieces of data or the period, whichever comes first
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
         public TradeBarConsolidator(int maxCount, TimeSpan period)
             : base(maxCount, period)

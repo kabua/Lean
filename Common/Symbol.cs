@@ -34,7 +34,7 @@ namespace QuantConnect
         public static readonly Symbol Empty = new Symbol(SecurityIdentifier.Empty, string.Empty);
 
         /// <summary>
-        /// Provides a convience method for creating a Symbol for most security types.
+        /// Provides a convenience method for creating a Symbol for most security types.
         /// This method currently does not support Option, Commodity, and Future
         /// </summary>
         /// <param name="ticker">The string ticker symbol</param>

@@ -87,7 +87,7 @@ namespace QuantConnect.Securities.Future
         }
 
         /// <summary>
-        /// Gets the margin currently alloted to the specified holding
+        /// Gets the margin currently allotted to the specified holding
         /// </summary>
         /// <param name="security">The security to compute maintenance margin for</param>
         /// <returns>The maintenance margin required for the </returns>

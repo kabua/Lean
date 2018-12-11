@@ -73,7 +73,7 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
                 throw new ArgumentException("The end date must be greater or equal to the start date.");
 
             // set the starting date
-            DateTime date = startUtc;
+            var date = startUtc;
 
             // loop until last date
             while (date <= endUtc)
@@ -154,8 +154,7 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
             {
                 var timeOffset = hour * 3600000;
 
-                var url = string.Format(@"http://www.dukascopy.com/datafeed/{0}/{1:D4}/{2:D2}/{3:D2}/{4:D2}h_ticks.bi5",
-                    dukascopySymbol, date.Year, date.Month - 1, date.Day, hour);
+                var url = $@"http://www.dukascopy.com/datafeed/{dukascopySymbol}/{date.Year:D4}/{date.Month - 1:D2}/{date.Day:D2}/{hour:D2}h_ticks.bi5";
 
                 using (var client = new WebClient())
                 {

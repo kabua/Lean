@@ -32,7 +32,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// Initializes a new instance of the <see cref="ManualTimeProvider"/>
         /// </summary>
         /// <param name="setCurrentTimeTimeZone">Specify to use this time zone when calling <see cref="SetCurrentTime"/>,
-        /// leave null for the deault of <see cref="TimeZones.Utc"/></param>
+        /// leave null for the default of <see cref="TimeZones.Utc"/></param>
         public ManualTimeProvider(DateTimeZone setCurrentTimeTimeZone = null)
         {
             _setCurrentTimeTimeZone = setCurrentTimeTimeZone ?? TimeZones.Utc;
@@ -44,7 +44,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// <param name="currentTime">The current time in the specified time zone, if the time zone is
         /// null then the time is interpreted as being in <see cref="TimeZones.Utc"/></param>
         /// <param name="setCurrentTimeTimeZone">Specify to use this time zone when calling <see cref="SetCurrentTime"/>,
-        /// leave null for the deault of <see cref="TimeZones.Utc"/></param>
+        /// leave null for the default of <see cref="TimeZones.Utc"/></param>
         public ManualTimeProvider(DateTime currentTime, DateTimeZone setCurrentTimeTimeZone = null)
         {
             _setCurrentTimeTimeZone = setCurrentTimeTimeZone ?? TimeZones.Utc;
@@ -70,8 +70,8 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         }
 
         /// <summary>
-        /// Sets the current time interpeting the specified time as a local time
-        /// using the time zone used at instatiation.
+        /// Sets the current time interpreting the specified time as a local time
+        /// using the time zone used at instantiation.
         /// </summary>
         /// <param name="time">The local time to set the current time time, will be
         /// converted into UTC</param>

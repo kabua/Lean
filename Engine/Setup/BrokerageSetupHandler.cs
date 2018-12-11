@@ -133,7 +133,7 @@ namespace QuantConnect.Lean.Engine.Setup
         /// <param name="brokerage">New brokerage output instance</param>
         /// <param name="job">Algorithm job task</param>
         /// <param name="resultHandler">The configured result handler</param>
-        /// <param name="transactionHandler">The configurated transaction handler</param>
+        /// <param name="transactionHandler">The configured transaction handler</param>
         /// <param name="realTimeHandler">The configured real time handler</param>
         /// <returns>True on successfully setting up the algorithm state, or false on error.</returns>
         public bool Setup(IAlgorithm algorithm, IBrokerage brokerage, AlgorithmNodePacket job, IResultHandler resultHandler, ITransactionHandler transactionHandler, IRealTimeHandler realTimeHandler)
@@ -306,7 +306,7 @@ namespace QuantConnect.Lean.Engine.Setup
                     // populate the algorithm with the account's current holdings
                     var holdings = brokerage.GetAccountHoldings();
 
-                    // add options first to ensure raw data normalization mode is set on the equity underlyings
+                    // add options first to ensure raw data normalization mode is set on the underlying equity 
                     foreach (var holding in holdings.OrderByDescending(x => x.Type))
                     {
                         Log.Trace("BrokerageSetupHandler.Setup(): Has existing holding: " + holding);
@@ -396,7 +396,7 @@ namespace QuantConnect.Lean.Engine.Setup
         /// </summary>
         /// <param name="algorithm">Algorithm instance</param>
         /// <param name="resultHandler">The configured result handler</param>
-        /// <param name="transactionHandler">The configurated transaction handler</param>
+        /// <param name="transactionHandler">The configured transaction handler</param>
         /// <param name="brokerage">Brokerage output instance</param>
         /// <param name="supportedSecurityTypes">The list of supported security types</param>
         /// <param name="minResolution">The resolution for the security to add, if required</param>
@@ -406,7 +406,7 @@ namespace QuantConnect.Lean.Engine.Setup
             // populate the algorithm with the account's outstanding orders
             var openOrders = brokerage.GetOpenOrders();
 
-            // add options first to ensure raw data normalization mode is set on the equity underlyings
+            // add options first to ensure raw data normalization mode is set on the underlying equity
             foreach (var order in openOrders.OrderByDescending(x => x.SecurityType))
             {
                 // be sure to assign order IDs such that we increment from the SecurityTransactionManager to avoid ID collisions
@@ -449,7 +449,7 @@ namespace QuantConnect.Lean.Engine.Setup
 
 
         /// <summary>
-        /// Adds initializaion error to the Errors list
+        /// Adds initialization error to the Errors list
         /// </summary>
         /// <param name="message">The error message to be added</param>
         /// <param name="inner">The inner exception being wrapped</param>

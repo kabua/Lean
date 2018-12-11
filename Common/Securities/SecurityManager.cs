@@ -143,7 +143,7 @@ namespace QuantConnect.Securities
         public int Count => _securityManager.Skip(0).Count();
 
         /// <summary>
-        /// Flag indicating if the internal arrray is read only.
+        /// Flag indicating if the internal array is read only.
         /// </summary>
         /// <remarks>IDictionary implementation</remarks>
         public bool IsReadOnly

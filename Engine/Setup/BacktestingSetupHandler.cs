@@ -39,12 +39,12 @@ namespace QuantConnect.Lean.Engine.Setup
     public class BacktestingSetupHandler : ISetupHandler
     {
         private TimeSpan _maxRuntime = TimeSpan.FromSeconds(300);
-        private decimal _startingCaptial = 0;
+        private decimal _startingCapital = 0;
         private int _maxOrders = 0;
         private DateTime _startingDate = new DateTime(1998, 01, 01);
 
         /// <summary>
-        /// Internal errors list from running the setup proceedures.
+        /// Internal errors list from running the setup procedures.
         /// </summary>
         public List<Exception> Errors
         {
@@ -73,7 +73,7 @@ namespace QuantConnect.Lean.Engine.Setup
         {
             get
             {
-                return _startingCaptial;
+                return _startingCapital;
             }
         }
 
@@ -149,7 +149,7 @@ namespace QuantConnect.Lean.Engine.Setup
         /// <param name="brokerage">Brokerage instance</param>
         /// <param name="baseJob">Algorithm job</param>
         /// <param name="resultHandler">The configured result handler</param>
-        /// <param name="transactionHandler">The configurated transaction handler</param>
+        /// <param name="transactionHandler">The configured transaction handler</param>
         /// <param name="realTimeHandler">The configured real time handler</param>
         /// <returns>Boolean true on successfully initializing the algorithm</returns>
         public bool Setup(IAlgorithm algorithm, IBrokerage brokerage, AlgorithmNodePacket baseJob, IResultHandler resultHandler, ITransactionHandler transactionHandler, IRealTimeHandler realTimeHandler)
@@ -231,7 +231,7 @@ namespace QuantConnect.Lean.Engine.Setup
             }
 
             //Get starting capital:
-            _startingCaptial = algorithm.Portfolio.Cash;
+            _startingCapital = algorithm.Portfolio.Cash;
 
             //Max Orders: 10k per backtest:
             if (job.UserPlan == UserPlan.Free)
@@ -252,7 +252,7 @@ namespace QuantConnect.Lean.Engine.Setup
 
             //Put into log for debugging:
             Log.Trace("SetUp Backtesting: User: " + job.UserId + " ProjectId: " + job.ProjectId + " AlgoId: " + job.AlgorithmId);
-            Log.Trace("Dates: Start: " + job.PeriodStart.ToShortDateString() + " End: " + job.PeriodFinish.ToShortDateString() + " Cash: " + _startingCaptial.ToString("C"));
+            Log.Trace("Dates: Start: " + job.PeriodStart.ToShortDateString() + " End: " + job.PeriodFinish.ToShortDateString() + " Cash: " + _startingCapital.ToString("C"));
 
             if (Errors.Count > 0)
             {

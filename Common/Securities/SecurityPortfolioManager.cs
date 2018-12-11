@@ -474,7 +474,7 @@ namespace QuantConnect.Securities
         }
 
         /// <summary>
-        /// Set the base currrency cash this algorithm is to manage.
+        /// Set the base currency cash this algorithm is to manage.
         /// </summary>
         /// <param name="cash">Decimal cash value of portfolio</param>
         public void SetCash(decimal cash)
@@ -591,7 +591,7 @@ namespace QuantConnect.Securities
                 return;
             }
 
-            // we need to modify our holdings in lght of the split factor
+            // we need to modify our holdings in light of the split factor
             var quantity = security.Holdings.Quantity / split.SplitFactor;
             var avgPrice = security.Holdings.AveragePrice * split.SplitFactor;
 

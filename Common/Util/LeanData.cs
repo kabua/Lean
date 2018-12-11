@@ -35,7 +35,7 @@ namespace QuantConnect.Util
     {
         /// <summary>
         /// Converts the specified base data instance into a lean data file csv line.
-        /// This method takes into account the fake that base data instances typically
+        /// This method takes into account the fact that base data instances typically
         /// are time stamped in the exchange time zone, but need to be written to disk
         /// in the data time zone.
         /// </summary>

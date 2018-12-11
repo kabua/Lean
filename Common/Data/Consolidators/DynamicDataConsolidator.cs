@@ -19,7 +19,7 @@ using QuantConnect.Data.Market;
 namespace QuantConnect.Data.Consolidators
 {
     /// <summary>
-    /// A data csolidator that can make trade bars from DynamicData derived types. This is useful for
+    /// A data consolidator that can make trade bars from DynamicData derived types. This is useful for
     /// aggregating Quandl and other highly flexible dynamic custom data types.
     /// </summary>
     public class DynamicDataConsolidator : TradeBarConsolidatorBase<DynamicData>
@@ -36,7 +36,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Creates a consolidator to produce a new 'TradeBar' representing the last count pieces of data.
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         public DynamicDataConsolidator(int maxCount)
             : base(maxCount)
         {
@@ -45,7 +45,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Creates a consolidator to produce a new 'TradeBar' representing the last count pieces of data or the period, whichever comes first.
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
         public DynamicDataConsolidator(int maxCount, TimeSpan period)
             : base(maxCount, period)

@@ -66,7 +66,7 @@ namespace QuantConnect.Packets
         public int RemainingLogAllowance;
 
         /// <summary>
-        /// Maximimum number of insights we'll store and score in a single backtest
+        /// Maximum number of insights we'll store and score in a single backtest
         /// </summary>
         [JsonProperty(PropertyName = "iBacktestingMaxInsights")]
         public int BacktestingMaxInsights;

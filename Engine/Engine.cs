@@ -70,7 +70,7 @@ namespace QuantConnect.Lean.Engine
         /// </summary>
         /// <param name="systemHandlers">The system handlers for controlling acquisition of jobs, messaging, and api calls</param>
         /// <param name="algorithmHandlers">The algorithm handlers for managing algorithm initialization, data, results, transaction, and real time events</param>
-        /// <param name="liveMode">True when running in live mode, false otherwises</param>
+        /// <param name="liveMode">True when running in live mode, false otherwise</param>
         public Engine(LeanEngineSystemHandlers systemHandlers, LeanEngineAlgorithmHandlers algorithmHandlers, bool liveMode)
         {
             _liveMode = liveMode;
@@ -421,7 +421,7 @@ namespace QuantConnect.Lean.Engine
                         if (!_liveMode)
                         {
                             var kps = dataPoints / (double) 1000 / totalSeconds;
-                            _algorithmHandlers.Results.DebugMessage($"Algorithm Id:({job.AlgorithmId}) completed in {totalSeconds:F2} seconds at {kps:F0}k data points per second. Processing total of {dataPoints:N0} data points.");
+                            _algorithmHandlers.Results.DebugMessage($"Algorithm Id:({job.AlgorithmId}) completed in {totalSeconds:F2} seconds at {kps:F0}k data points per second. Processing a total of {dataPoints:N0} data points.");
                         }
 
                         _algorithmHandlers.Results.SendFinalResult(job, orders, algorithm.Transactions.TransactionRecord, holdings, algorithm.Portfolio.CashBook, statisticsResults, banner);

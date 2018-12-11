@@ -36,7 +36,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Initializes a new instance of the <see cref="TickQuoteBarConsolidator"/> class
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         public TickQuoteBarConsolidator(int maxCount)
             : base(maxCount)
         {
@@ -45,7 +45,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Initializes a new instance of the <see cref="TickQuoteBarConsolidator"/> class
         /// </summary>
-        /// <param name="maxCount">The number of pieces to accept before emiting a consolidated bar</param>
+        /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
         public TickQuoteBarConsolidator(int maxCount, TimeSpan period)
             : base(maxCount, period)

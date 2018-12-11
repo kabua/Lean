@@ -133,7 +133,7 @@ namespace QuantConnect.Configuration
         /// <summary>
         /// Get the matching config setting from the file searching for this key.
         /// </summary>
-        /// <param name="key">String key value we're seaching for in the config file.</param>
+        /// <param name="key">String key value we're searching for in the config file.</param>
         /// <param name="defaultValue"></param>
         /// <returns>String value of the configuration setting or empty string if nothing found.</returns>
         public static string Get(string key, string defaultValue = "")
@@ -159,7 +159,7 @@ namespace QuantConnect.Configuration
         }
 
         /// <summary>
-        /// Sets a configuration value. This is really only used to help testing. The key heye can be
+        /// Sets a configuration value. This is really only used to help testing. The key here can be
         /// specified as {environment}.key to set a value on a specific environment
         /// </summary>
         /// <param name="key">The key to be set</param>
@@ -331,7 +331,7 @@ namespace QuantConnect.Configuration
         }
 
         /// <summary>
-        /// Flattens the jobject with respect to the selected environment and then
+        /// Flattens the JObject with respect to the selected environment and then
         /// removes the 'environments' node
         /// </summary>
         /// <param name="overrideEnvironment">The environment to use</param>
@@ -342,7 +342,7 @@ namespace QuantConnect.Configuration
         }
 
         /// <summary>
-        /// Flattens the jobject with respect to the selected environment and then
+        /// Flattens the JObject with respect to the selected environment and then
         /// removes the 'environments' node
         /// </summary>
         /// <param name="config">The configuration represented as a JObject</param>

@@ -220,7 +220,7 @@ namespace QuantConnect.ToolBox
                 Log.Trace("LeanDataWriter.Write(): Existing deleted: " + filePath);
             }
 
-            // Create the directory if it doesnt exist
+            // Create the directory if it doesn't exist
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
             // Write out this data string to a zip file

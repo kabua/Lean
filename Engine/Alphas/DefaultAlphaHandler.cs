@@ -75,7 +75,7 @@ namespace QuantConnect.Lean.Engine.Alphas
         protected IAlgorithm Algorithm { get; private set; }
 
         /// <summary>
-        /// Gets the confgured messaging handler for sending packets
+        /// Gets the configured messaging handler for sending packets
         /// </summary>
         protected IMessagingHandler MessagingHandler { get; private set; }
 
@@ -93,7 +93,7 @@ namespace QuantConnect.Lean.Engine.Alphas
         /// <param name="api">Api instance</param>
         public virtual void Initialize(AlgorithmNodePacket job, IAlgorithm algorithm, IMessagingHandler messagingHandler, IApi api)
         {
-            // initializing these properties just in case, doens't hurt to have them populated
+            // initializing these properties just in case, doesn't hurt to have them populated
             Job = job;
             Algorithm = algorithm;
             MessagingHandler = messagingHandler;
@@ -133,12 +133,12 @@ namespace QuantConnect.Lean.Engine.Alphas
             }
 
             // send date ranges to extensions for initialization -- this data wasn't available when the handler was
-            // initialzied, so we need to invoke it here
+            // initialized, so we need to invoke it here
             InsightManager.InitializeExtensionsForRange(algorithm.StartDate, algorithm.EndDate, algorithm.UtcTime);
         }
 
         /// <summary>
-        /// Performs processing in sync with the algorithm's time loop to provide consisten reading of data
+        /// Performs processing in sync with the algorithm's time loop to provide consistent reading of data
         /// </summary>
         public virtual void ProcessSynchronousEvents()
         {
@@ -147,7 +147,7 @@ namespace QuantConnect.Lean.Engine.Alphas
                 return;
             }
 
-            // check the last snap shot time, we may have already produced a snapshot via OnInsightssGenerated
+            // check the last snap shot time, we may have already produced a snapshot via OnInsightsGenerated
             if (_lastSecurityValuesSnapshotTime != Algorithm.UtcTime)
             {
                 InsightManager.Step(Algorithm.UtcTime, CreateSecurityValuesSnapshot(), new GeneratedInsightsCollection(Algorithm.UtcTime, Enumerable.Empty<Insight>()));

@@ -550,7 +550,7 @@ namespace QuantConnect
         Deleted,        //6
         /// Algorithm completed running
         Completed,      //7
-        /// Runtime Error Stoped Algorithm
+        /// Runtime Error Stopped Algorithm
         RuntimeError,    //8
         /// Error in the algorithm id (not used).
         Invalid,
@@ -628,7 +628,7 @@ namespace QuantConnect
         /// </summary>
         Raw,
         /// <summary>
-        /// The adjusted prices with splits and dividendends factored in
+        /// The adjusted prices with splits and dividends factored in
         /// </summary>
         Adjusted,
         /// <summary>
@@ -694,7 +694,7 @@ namespace QuantConnect
     }
 
     /// <summary>
-    /// US Public Holidays - Not Tradeable:
+    /// US Public Holidays - Not Tradable:
     /// </summary>
     public static class USHoliday
     {

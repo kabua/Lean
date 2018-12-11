@@ -109,7 +109,7 @@ namespace QuantConnect.Algorithm
             _startDate = new DateTime(1998, 01, 01);
             _endDate = DateTime.Now.AddDays(-1);
 
-            // intialize our time keeper with only new york
+            // initialize our time keeper with only new york
             _timeKeeper = new TimeKeeper(_startDate, new[] { TimeZones.NewYork });
             // set our local time zone
             _localTimeKeeper = _timeKeeper.GetLocalTimeKeeper(TimeZones.NewYork);
@@ -140,7 +140,7 @@ namespace QuantConnect.Algorithm
             Universe = new UniverseDefinitions(this);
             UniverseSettings = new UniverseSettings(Resolution.Minute, 2m, true, false, TimeSpan.FromDays(1));
 
-            // initialize our scheduler, this acts as a liason to the real time handler
+            // initialize our scheduler, this acts as a liaison to the real time handler
             Schedule = new ScheduleManager(Securities, TimeZone);
 
             // initialize the trade builder
@@ -164,7 +164,7 @@ namespace QuantConnect.Algorithm
 
         /// <summary>
         /// Security collection is an array of the security objects such as Equities and FOREX. Securities data
-        /// manages the properties of tradeable assets such as price, open and close time and holdings information.
+        /// manages the properties of tradable assets such as price, open and close time and holdings information.
         /// </summary>
         public SecurityManager Securities
         {
@@ -179,7 +179,7 @@ namespace QuantConnect.Algorithm
         public IReadOnlyDictionary<Symbol, Security> ActiveSecurities => UniverseManager.ActiveSecurities;
 
         /// <summary>
-        /// Portfolio object provieds easy access to the underlying security-holding properties; summed together in a way to make them useful.
+        /// Portfolio object provides easy access to the underlying security-holding properties; summed together in a way to make them useful.
         /// This saves the user time by providing common portfolio requests in a single
         /// </summary>
         public SecurityPortfolioManager Portfolio

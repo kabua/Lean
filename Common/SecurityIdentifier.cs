@@ -188,7 +188,7 @@ namespace QuantConnect
 
         /// <summary>
         /// Gets the option strike price. This only applies to SecurityType.Option
-        /// and will thrown anexception if accessed otherwse.
+        /// and will thrown an exception if accessed otherwise.
         /// </summary>
         public decimal StrikePrice
         {
@@ -325,7 +325,7 @@ namespace QuantConnect
         }
 
         /// <summary>
-        /// Helper overload that will search the mapfiles to resolve the first date. This implementation
+        /// Helper overload that will search the map files to resolve the first date. This implementation
         /// uses the configured <see cref="IMapFileProvider"/> via the <see cref="Composer.Instance"/>
         /// </summary>
         /// <param name="symbol">The symbol as it is known today</param>
@@ -583,7 +583,7 @@ namespace QuantConnect
         }
 
         /// <summary>
-        /// Helper method impl to be used by parse and tryparse
+        /// Helper method impl to be used by parse and try parse
         /// </summary>
         private static bool TryParse(string value, out SecurityIdentifier identifier, out Exception exception)
         {

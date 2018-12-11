@@ -9,7 +9,7 @@ namespace QuantConnect.Views
     public interface IDesktopMessageHandler
     {
         /// <summary>
-        /// This method should be called first when a new job is recieved.
+        /// This method should be called first when a new job is received.
         /// </summary>
         /// <param name="job">The job that is being executed</param>
         void Initialize(AlgorithmNodePacket job);

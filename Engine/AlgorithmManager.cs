@@ -202,7 +202,7 @@ namespace QuantConnect.Lean.Engine
                 }
             }
 
-            //Loop over the queues: get a data collection, then pass them all into relevent methods in the algorithm.
+            //Loop over the queues: get a data collection, then pass them all into relevant methods in the algorithm.
             Log.Trace("AlgorithmManager.Run(): Begin DataStream - Start: " + algorithm.StartDate + " Stop: " + algorithm.EndDate);
             foreach (var timeSlice in Stream(algorithm, dataManager, synchronizer, results, token))
             {
@@ -219,7 +219,7 @@ namespace QuantConnect.Lean.Engine
                 //Execute with TimeLimit Monitor:
                 if (token.IsCancellationRequested)
                 {
-                    Log.Error("AlgorithmManager.Run(): CancellationRequestion at " + timeSlice.Time);
+                    Log.Error("AlgorithmManager.Run(): CancellationRequested at " + timeSlice.Time);
                     return;
                 }
 

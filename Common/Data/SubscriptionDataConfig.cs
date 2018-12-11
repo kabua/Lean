@@ -129,7 +129,7 @@ namespace QuantConnect.Data
         public readonly DateTimeZone ExchangeTimeZone;
 
         /// <summary>
-        /// Consolidators that are registred with this subscription
+        /// Consolidators that are registered with this subscription
         /// </summary>
         public readonly HashSet<IDataConsolidator> Consolidators;
 

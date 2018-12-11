@@ -111,7 +111,7 @@ namespace QuantConnect.Util
                     var type = typeof(T);
                     if (_exportedValues.TryGetValue(type, out values))
                     {
-                        // if we've alread loaded this part, then just return the same one
+                        // if we've already loaded this part, then just return the same one
                         instance = values.OfType<T>().FirstOrDefault(x => x.GetType().MatchesTypeName(typeName));
                         if (instance != null)
                         {

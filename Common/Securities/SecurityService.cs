@@ -148,7 +148,7 @@ namespace QuantConnect.Securities
             _securityInitializerProvider.SecurityInitializer.Initialize(security);
 
             // if leverage was specified then apply to security after the initializer has run, parameters of this
-            // method take precedence over the intializer
+            // method take precedence over the initializer
             if (leverage > 0)
             {
                 security.SetLeverage(leverage);

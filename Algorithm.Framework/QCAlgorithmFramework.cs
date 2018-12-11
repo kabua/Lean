@@ -59,7 +59,7 @@ namespace QuantConnect.Algorithm.Framework
         public IAlphaModel Alpha { get; set; }
 
         /// <summary>
-        /// Gets or sets the portoflio construction model
+        /// Gets or sets the portfolio construction model
         /// </summary>
         public IPortfolioConstructionModel PortfolioConstruction { get; set; }
 

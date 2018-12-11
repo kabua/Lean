@@ -59,7 +59,7 @@ namespace QuantConnect.ToolBox
     }
 
     /// <summary>
-    /// Use <see cref="TickQuoteBarConsolidator"/> to consolidate trade ticks into a specified resolution
+    /// Use <see cref="TickConsolidator"/> to consolidate trade ticks into a specified resolution
     /// </summary>
     public class TradeTickAggregator : TickAggregator
     {

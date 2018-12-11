@@ -60,7 +60,7 @@ namespace QuantConnect.Data
         /// <summary>
         /// Current time marker of this data packet.
         /// </summary>
-        /// <remarks>All data is timeseries based.</remarks>
+        /// <remarks>All data is time-series based.</remarks>
         public DateTime Time
         {
             get
@@ -126,7 +126,7 @@ namespace QuantConnect.Data
         }
 
         /// <summary>
-        /// Constructor for initialising the dase data class
+        /// Constructor for initializing the base data class
         /// </summary>
         public BaseData()
         {
@@ -272,7 +272,7 @@ namespace QuantConnect.Data
         /// <returns>string - a string formatted as SPY: 167.753</returns>
         public override string ToString()
         {
-            return string.Format("{0}: {1}", Symbol, Value.ToString("C"));
+            return $"{Symbol}: {Value:C}";
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace QuantConnect.Data
         /// <remarks>OBSOLETE:: This implementation is added for backward/forward compatibility purposes. This function is no longer called by the LEAN engine.</remarks>
         /// <param name="config">Configuration object</param>
         /// <param name="date">Date of this source file</param>
-        /// <param name="datafeed">Type of datafeed we're reqesting - backtest or live</param>
+        /// <param name="datafeed">Type of datafeed we're requesting - backtest or live</param>
         /// <returns>String URL of source file.</returns>
         [Obsolete("GetSource(SubscriptionDataConfig, DateTime, DataFeedEndpoint) method has been made obsolete, use GetSource(SubscriptionDataConfig, DateTime, bool) instead.")]
         public virtual string GetSource(SubscriptionDataConfig config, DateTime date, DataFeedEndpoint datafeed)

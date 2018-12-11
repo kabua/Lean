@@ -61,7 +61,7 @@ namespace QuantConnect.Securities
         /// <summary>
         /// Gets the buying power available for a trade
         /// </summary>
-        /// <param name="parameters">A parameters object containing the algorithm's potrfolio, security, and order direction</param>
+        /// <param name="parameters">A parameters object containing the algorithm's portfolio, security, and order direction</param>
         /// <returns>The buying power available for the trade</returns>
         BuyingPower GetBuyingPower(BuyingPowerParameters parameters);
     }
