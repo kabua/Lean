@@ -130,6 +130,10 @@
       <Project>{ac9a142c-b485-44d7-91ff-015c22c43d05}</Project>
       <Name>QuantConnect.ToolBox</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TradeRight.PrimeTime\TradeRight.PrimeTime.csproj">
+      <Project>{e2083fc6-4c63-43f5-8168-79b10a620844}</Project>
+      <Name>TradeRight.PrimeTime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

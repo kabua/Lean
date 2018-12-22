@@ -221,6 +221,7 @@ namespace QuantConnect.Data.Market
 
                 // Which security type is this data feed:
                 var scaleFactor = GetScaleFactor(config.SecurityType);
+                var volumeScalar = GetVolumeScalarFactor(config.SecurityType);
 
                 switch (config.SecurityType)
                 {
@@ -253,6 +254,8 @@ namespace QuantConnect.Data.Market
                         BidPrice = csv[1].ToDecimal();
                         AskPrice = csv[2].ToDecimal();
                         Value = (BidPrice + AskPrice) / 2;
+                        BidSize = csv[3].ToDecimal() * volumeScalar;
+                        AskSize = csv[4].ToDecimal() * volumeScalar;
                         break;
                     }
 
@@ -427,6 +430,16 @@ namespace QuantConnect.Data.Market
         public override BaseData Clone()
         {
             return new Tick(this);
+        }
+
+        /// <summary>
+        /// Get the volume scalar factor for the given <paramref name="securityType"/>.
+        /// </summary>
+        /// <param name="securityType"></param>
+        /// <returns></returns>
+        public static int GetVolumeScalarFactor(SecurityType securityType)
+        {
+            return securityType == SecurityType.Forex ? 1000000 : 1;
         }
 
         private static decimal GetScaleFactor(SecurityType securityType)

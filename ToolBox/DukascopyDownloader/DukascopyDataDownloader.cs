@@ -75,18 +75,20 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
             // set the starting date
             var date = startUtc;
 
+            var volumeScalar = Tick.GetVolumeScalarFactor(symbol.ID.SecurityType);
+
             // loop until last date
             while (date <= endUtc)
             {
                 // request all ticks for a specific date
-                var ticks = DownloadTicks(symbol, date);
+                var ticks = DownloadTicks(symbol, date, volumeScalar);
 
                 switch (resolution)
                 {
                     case Resolution.Tick:
                         foreach (var tick in ticks)
                         {
-                            yield return new Tick(tick.Time, symbol, tick.BidPrice, tick.AskPrice);
+                            yield return tick;
                         }
                         break;
 
@@ -135,7 +137,9 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
                         High = g.Max(b => b.AskPrice),
                         Low = g.Min(b => b.AskPrice),
                         Close = g.Last().AskPrice
-                    }
+                    },
+                    LastBidSize = g.Aggregate(0m, (i, tick) => i + tick.BidSize),
+                    LastAskSize = g.Aggregate(0m, (i, tick) => i + tick.AskSize)
                 };
         }
 
@@ -144,8 +148,9 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
         /// </summary>
         /// <param name="symbol">The requested symbol</param>
         /// <param name="date">The requested date</param>
+        /// <param name="volumeScalar">The scaling factor to use for the volume</param>
         /// <returns>An enumerable of ticks</returns>
-        private IEnumerable<Tick> DownloadTicks(Symbol symbol, DateTime date)
+        private IEnumerable<Tick> DownloadTicks(Symbol symbol, DateTime date, int volumeScalar)
         {
             var dukascopySymbol = _symbolMapper.GetBrokerageSymbol(symbol);
             var pointValue = _symbolMapper.GetPointValue(symbol);
@@ -170,7 +175,7 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
                     }
                     if (bytes != null && bytes.Length > 0)
                     {
-                        var ticks = AppendTicksToList(symbol, bytes, date, timeOffset, pointValue);
+                        var ticks = AppendTicksToList(symbol, bytes, date, timeOffset, pointValue, volumeScalar);
                         foreach (var tick in ticks)
                         {
                             yield return tick;
@@ -188,7 +193,8 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
         /// <param name="date">The date for the ticks</param>
         /// <param name="timeOffset">The time offset in milliseconds</param>
         /// <param name="pointValue">The price multiplier</param>
-        private static unsafe List<Tick> AppendTicksToList(Symbol symbol, byte[] bytesBi5, DateTime date, int timeOffset, double pointValue)
+        /// <param name="volumeScalar">The scaling factor to use for the volume</param>
+        private static unsafe List<Tick> AppendTicksToList(Symbol symbol, byte[] bytesBi5, DateTime date, int timeOffset, double pointValue, int volumeScalar)
         {
             var ticks = new List<Tick>();
 
@@ -205,8 +211,8 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
                     // ii1 = milliseconds within the hour
                     // ii2 = AskPrice * point value
                     // ii3 = BidPrice * point value
-                    // ff1 = AskVolume (not used)
-                    // ff2 = BidVolume (not used)
+                    // ff1 = AskVolume
+                    // ff2 = BidVolume
 
                     fixed (byte* pBuffer = &bytes[0])
                     {
@@ -214,18 +220,26 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
 
                         for (int i = 0; i < count; i++)
                         {
+                            var index = i * 5 * sizeof(uint);
                             ReverseBytes(p); uint time = *p++;
                             ReverseBytes(p); uint ask = *p++;
                             ReverseBytes(p); uint bid = *p++;
-                            p++; p++;
+                            ReverseBytes(p++); float askSize = BitConverter.ToSingle(bytes, index + 3 * sizeof(uint));
+                            ReverseBytes(p++); float bidSize = BitConverter.ToSingle(bytes, index + 4 * sizeof(uint));
 
                             if (bid > 0 && ask > 0)
                             {
-                                ticks.Add(new Tick(
+                                var tick = new Tick(
                                     date.AddMilliseconds(timeOffset + time),
                                     symbol,
                                     Convert.ToDecimal(bid / pointValue),
-                                    Convert.ToDecimal(ask / pointValue)));
+                                    Convert.ToDecimal(ask / pointValue))
+                                {
+                                    AskSize = Convert.ToDecimal(askSize * volumeScalar),
+                                    BidSize = Convert.ToDecimal(bidSize * volumeScalar),
+                                };
+
+                                ticks.Add(tick);
                             }
                         }
                     }
@@ -243,6 +257,5 @@ namespace QuantConnect.ToolBox.DukascopyDownloader
         {
             *p = (*p & 0x000000FF) << 24 | (*p & 0x0000FF00) << 8 | (*p & 0x00FF0000) >> 8 | (*p & 0xFF000000) >> 24;
         }
-
     }
 }

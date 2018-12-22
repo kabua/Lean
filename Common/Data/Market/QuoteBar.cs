@@ -40,6 +40,16 @@ namespace QuantConnect.Data.Market
         public decimal LastAskSize { get; set; }
 
         /// <summary>
+        /// Size of bid quote.
+        /// </summary>
+        public decimal BidSize = 0;
+
+        /// <summary>
+        /// Size of ask quote.
+        /// </summary>
+        public decimal AskSize = 0;
+
+        /// <summary>
         /// Bid OHLC
         /// </summary>
         public Bar Bid { get; set; }
@@ -221,8 +231,8 @@ namespace QuantConnect.Data.Market
             Time = time;
             Bid = bid == null ? null : new Bar(bid.Open, bid.High, bid.Low, bid.Close);
             Ask = ask == null ? null : new Bar(ask.Open, ask.High, ask.Low, ask.Close);
-            if (Bid != null) LastBidSize = lastBidSize;
-            if (Ask != null) LastAskSize = lastAskSize;
+            if (Bid != null) BidSize = LastBidSize = lastBidSize;
+            if (Ask != null) AskSize = LastAskSize = lastAskSize;
             Value = Close;
             Period = period ?? TimeSpan.FromMinutes(1);
             DataType = MarketDataType.QuoteBar;
@@ -241,19 +251,21 @@ namespace QuantConnect.Data.Market
         {
             // update our bid and ask bars - handle null values, this is to give good values for midpoint OHLC
             if (Bid == null && bidPrice != 0) Bid = new Bar();
-            if (Bid != null) Bid.Update(bidPrice);
+            Bid?.Update(bidPrice);
 
             if (Ask == null && askPrice != 0) Ask = new Bar();
-            if (Ask != null) Ask.Update(askPrice);
+            Ask?.Update(askPrice);
 
             if (bidSize > 0)
             {
                 LastBidSize = bidSize;
+                BidSize += bidSize;
             }
 
             if (askSize > 0)
             {
                 LastAskSize = askSize;
+                AskSize += askSize;
             }
 
             // be prepared for updates without trades

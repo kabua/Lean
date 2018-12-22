@@ -53,6 +53,7 @@ namespace QuantConnect.Util
         {
             var milliseconds = data.Time.TimeOfDay.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
             var longTime = data.Time.ToString(DateFormat.TwelveCharacter);
+            var volumeScalar = Tick.GetVolumeScalarFactor(securityType);
 
             switch (securityType)
             {
@@ -136,7 +137,7 @@ namespace QuantConnect.Util
                         case Resolution.Tick:
                             var tick = data as Tick;
                             if (tick == null) throw new NullReferenceException("tick");
-                            return ToCsv(milliseconds, tick.BidPrice, tick.AskPrice);
+                            return ToCsv(milliseconds, tick.BidPrice, tick.AskPrice, tick.BidSize / volumeScalar, tick.AskSize / volumeScalar);
 
                         case Resolution.Second:
                         case Resolution.Minute:
@@ -144,7 +145,8 @@ namespace QuantConnect.Util
                             if (bar == null) throw new NullReferenceException("bar");
                             return ToCsv(milliseconds,
                                 ToNonScaledCsv(bar.Bid), bar.LastBidSize,
-                                ToNonScaledCsv(bar.Ask), bar.LastAskSize);
+                                ToNonScaledCsv(bar.Ask), bar.LastAskSize,
+                                bar.BidSize, bar.AskSize);
 
                         case Resolution.Hour:
                         case Resolution.Daily:
@@ -152,7 +154,8 @@ namespace QuantConnect.Util
                             if (bigBar == null) throw new NullReferenceException("big bar");
                             return ToCsv(longTime,
                                 ToNonScaledCsv(bigBar.Bid), bigBar.LastBidSize,
-                                ToNonScaledCsv(bigBar.Ask), bigBar.LastAskSize);
+                                ToNonScaledCsv(bigBar.Ask), bigBar.LastAskSize,
+                                bigBar.BidSize, bigBar.AskSize);
                     }
                     break;
 

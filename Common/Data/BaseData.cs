@@ -272,7 +272,7 @@ namespace QuantConnect.Data
         /// <returns>string - a string formatted as SPY: 167.753</returns>
         public override string ToString()
         {
-            return $"{Symbol}: {Value:C}";
+            return $"{Symbol}: {Value:C5}";
         }
 
         /// <summary>
