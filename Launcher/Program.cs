@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using QuantConnect.Configuration;
 using QuantConnect.Lean.Engine;
@@ -71,8 +72,15 @@ namespace QuantConnect.Lean.Launcher
             Log.Trace("Engine.Main(): Started " + DateTime.Now.ToShortTimeString());
             Log.Trace("Engine.Main(): Memory " + OS.ApplicationMemoryUsed + "Mb-App  " + +OS.TotalPhysicalMemoryUsed + "Mb-Used  " + OS.TotalPhysicalMemory + "Mb-Total");
 
+            if (environment.EndsWith("-desktop"))
+            {
+                var fileName = Config.Get("desktop-exe");
+                var existingProcess = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(fileName)).FirstOrDefault();
+                existingProcess?.Kill();
+            }
+
             //Import external libraries specific to physical server location (cloud/local)
-            LeanEngineSystemHandlers leanEngineSystemHandlers;
+                LeanEngineSystemHandlers leanEngineSystemHandlers;
             try
             {
                 leanEngineSystemHandlers = LeanEngineSystemHandlers.FromConfiguration(Composer.Instance);
