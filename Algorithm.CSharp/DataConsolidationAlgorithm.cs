@@ -70,7 +70,7 @@ namespace QuantConnect.Algorithm.CSharp
             // here we'll define a slightly more complex consolidator. what we're trying to produce is a 3
             // day bar.  Now we could just use a single TradeBarConsolidator like above and pass in TimeSpan.FromDays(3),
             // but in reality that's not what we want. For time spans of longer than a day we'll get incorrect results around
-            // weekends and such. What we really want are tradeable days. So we'll create a daily consolidator, and then wrap
+            // weekends and such. What we really want are tradable days. So we'll create a daily consolidator, and then wrap
             // it with a 3 count consolidator.
 
             // first define a one day trade bar -- this produces a consolidated piece of data after a day has passed

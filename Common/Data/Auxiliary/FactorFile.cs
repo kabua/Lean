@@ -38,7 +38,7 @@ namespace QuantConnect.Data.Auxiliary
         public SortedList<DateTime, FactorFileRow> SortedFactorFileData { get; set; }
 
         /// <summary>
-        /// The minimum tradeable date for the symbol
+        /// The minimum tradable date for the symbol
         /// </summary>
         /// <remarks>
         /// Some factor files have INF split values, indicating that the stock has so many splits

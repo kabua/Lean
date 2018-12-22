@@ -38,15 +38,15 @@ namespace Oanda.RestV20.Model
         {
             
             /// <summary>
-            /// Enum Tradeable for "tradeable"
+            /// Enum Tradeable for "tradable"
             /// </summary>
-            [EnumMember(Value = "tradeable")]
+            [EnumMember(Value = "tradable")]
             Tradeable,
             
             /// <summary>
-            /// Enum Nontradeable for "non-tradeable"
+            /// Enum Nontradeable for "non-tradable"
             /// </summary>
-            [EnumMember(Value = "non-tradeable")]
+            [EnumMember(Value = "non-tradable")]
             Nontradeable,
             
             /// <summary>
@@ -69,7 +69,7 @@ namespace Oanda.RestV20.Model
         /// <param name="Instrument">The Price&#39;s Instrument..</param>
         /// <param name="Time">The date/time when the Price was created.</param>
         /// <param name="Status">The status of the Price..</param>
-        /// <param name="Tradeable">Flag indicating if the Price is tradeable or not.</param>
+        /// <param name="Tradeable">Flag indicating if the Price is tradable or not.</param>
         /// <param name="Bids">The list of prices and liquidity available on the Instrument&#39;s bid side. It is possible for this list to be empty if there is no bid liquidity currently available for the Instrument in the Account..</param>
         /// <param name="Asks">The list of prices and liquidity available on the Instrument&#39;s ask side. It is possible for this list to be empty if there is no ask liquidity currently available for the Instrument in the Account..</param>
         /// <param name="CloseoutBid">The closeout bid Price. This Price is used when a bid is required to closeout a Position (margin closeout or manual) yet there is no bid liquidity. The closeout bid is never used to open a new position..</param>
@@ -110,9 +110,9 @@ namespace Oanda.RestV20.Model
         [DataMember(Name="time", EmitDefaultValue=false)]
         public string Time { get; set; }
         /// <summary>
-        /// Flag indicating if the Price is tradeable or not
+        /// Flag indicating if the Price is tradable or not
         /// </summary>
-        /// <value>Flag indicating if the Price is tradeable or not</value>
+        /// <value>Flag indicating if the Price is tradable or not</value>
         [DataMember(Name="tradeable", EmitDefaultValue=false)]
         public bool? Tradeable { get; set; }
         /// <summary>

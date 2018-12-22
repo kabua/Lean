@@ -91,7 +91,7 @@ namespace QuantConnect.Algorithm
             //Add this to the data-feed subscriptions
             var symbolObject = new Symbol(SecurityIdentifier.GenerateBase(symbol, Market.USA), symbol);
 
-            //Add this new generic data as a tradeable security:
+            //Add this new generic data as a tradable security:
             var config = SubscriptionManager.SubscriptionDataConfigService.Add(dataType,
                 symbolObject,
                 resolution,

@@ -860,7 +860,7 @@ namespace QuantConnect.Algorithm
         /// <summary>
         /// Order fill event handler. On an order fill update the resulting information is passed to this method.
         /// </summary>
-        /// <param name="orderEvent">Order event details containing details of the evemts</param>
+        /// <param name="orderEvent">Order event details containing details of the events</param>
         /// <remarks>This method can be called asynchronously and so should only be used by seasoned C# experts. Ensure you use proper locks on thread-unsafe objects</remarks>
         public virtual void OnOrderEvent(OrderEvent orderEvent)
         {
@@ -1728,7 +1728,7 @@ namespace QuantConnect.Algorithm
         public Security AddData<T>(string symbol, Resolution resolution = Resolution.Minute)
             where T : IBaseData, new()
         {
-            //Add this new generic data as a tradeable security:
+            //Add this new generic data as a tradable security:
             // Defaults:extended market hours"      = true because we want events 24 hours,
             //          fillforward                 = false because only want to trigger when there's new custom data.
             //          leverage                    = 1 because no leverage on nonmarket data?
@@ -1770,7 +1770,7 @@ namespace QuantConnect.Algorithm
             //Add this to the data-feed subscriptions
             var symbolObject = new Symbol(SecurityIdentifier.GenerateBase(symbol, Market.USA), symbol);
 
-            //Add this new generic data as a tradeable security:
+            //Add this new generic data as a tradable security:
             var config = SubscriptionManager.SubscriptionDataConfigService.Add(typeof(T),
                 symbolObject,
                 resolution,

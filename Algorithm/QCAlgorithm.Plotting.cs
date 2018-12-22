@@ -219,7 +219,7 @@ namespace QuantConnect.Algorithm
         /// Plots the value of each indicator on the chart
         /// </summary>
         /// <param name="chart">The chart's name</param>
-        /// <param name="indicators">The indicatorsto plot</param>
+        /// <param name="indicators">The indicators to plot</param>
         /// <seealso cref="Plot(string,string,decimal)"/>
         public void Plot<T>(string chart, params IndicatorBase<T>[] indicators)
             where T : IBaseData

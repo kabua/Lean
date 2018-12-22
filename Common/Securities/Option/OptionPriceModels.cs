@@ -43,7 +43,7 @@ namespace QuantConnect.Securities.Option
         private const int _timeStepsFD = 100;
 
         /// <summary>
-        /// Pricing engine for European vanilla options using analytical formulae. 
+        /// Pricing engine for European vanilla options using analytical formula. 
         /// QuantLib reference: http://quantlib.org/reference/class_quant_lib_1_1_analytic_european_engine.html
         /// </summary>
         /// <returns>New option price model instance</returns>

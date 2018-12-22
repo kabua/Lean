@@ -20,7 +20,7 @@ using QuantConnect.Data.UniverseSelection;
 namespace QuantConnect.Algorithm.Framework.Portfolio
 {
     /// <summary>
-    /// Provides a base class for portoflio construction models
+    /// Provides a base class for portfolio construction models
     /// </summary>
     public class PortfolioConstructionModel : IPortfolioConstructionModel
     {
@@ -28,8 +28,8 @@ namespace QuantConnect.Algorithm.Framework.Portfolio
         /// Create portfolio targets from the specified insights
         /// </summary>
         /// <param name="algorithm">The algorithm instance</param>
-        /// <param name="insights">The insights to create portoflio targets from</param>
-        /// <returns>An enumerable of portoflio targets to be sent to the execution model</returns>
+        /// <param name="insights">The insights to create portfolio targets from</param>
+        /// <returns>An enumerable of portfolio targets to be sent to the execution model</returns>
         public virtual IEnumerable<IPortfolioTarget> CreateTargets(QCAlgorithmFramework algorithm, Insight[] insights)
         {
             throw new System.NotImplementedException("Types deriving from 'PortfolioConstructionModel' must implement the 'IEnumerable<IPortfolioTarget> CreateTargets(QCAlgorithmFramework, Insight[]) method.");

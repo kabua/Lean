@@ -165,7 +165,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             if (subscription == null)
             {
                 Log.Trace($"DataManager.AddSubscription(): Unable to add subscription for: {request.Configuration}");
-                // subscription will be null when there's no tradeable dates for the security between the requested times, so
+                // subscription will be null when there's no tradable dates for the security between the requested times, so
                 // don't even try to load the data
                 return false;
             }

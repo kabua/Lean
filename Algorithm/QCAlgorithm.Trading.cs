@@ -946,7 +946,7 @@ namespace QuantConnect.Algorithm
         /// Calculate the order quantity to achieve target-percent holdings.
         /// </summary>
         /// <param name="symbol">Security object we're asking for</param>
-        /// <param name="target">Target percentag holdings</param>
+        /// <param name="target">Target percentage holdings</param>
         /// <returns>Order quantity to achieve this percentage</returns>
         public decimal CalculateOrderQuantity(Symbol symbol, double target)
         {

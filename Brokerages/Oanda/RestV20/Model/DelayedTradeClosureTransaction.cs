@@ -24,7 +24,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Oanda.RestV20.Model
 {
     /// <summary>
-    /// A DelayedTradeClosure Transaction is created administratively to indicate open trades that should have been closed but weren&#39;t because the open trades&#39; instruments were untradeable at the time. Open trades listed in this transaction will be closed once their respective instruments become tradeable.
+    /// A DelayedTradeClosure Transaction is created administratively to indicate open trades that should have been closed but weren&#39;t because the open trades&#39; instruments were untradeable at the time. Open trades listed in this transaction will be closed once their respective instruments become tradable.
     /// </summary>
     [DataContract]
     public partial class DelayedTradeClosureTransaction :  IEquatable<DelayedTradeClosureTransaction>, IValidatableObject
@@ -304,7 +304,7 @@ namespace Oanda.RestV20.Model
         /// <param name="RequestID">The Request ID of the request which generated the transaction..</param>
         /// <param name="Type">The Type of the Transaction. Always set to \&quot;DELAYED_TRADE_CLOSURE\&quot; for an DelayedTradeClosureTransaction..</param>
         /// <param name="Reason">The reason for the delayed trade closure.</param>
-        /// <param name="TradeIDs">List of Trade ID&#39;s identifying the open trades that will be closed when their respective instruments become tradeable.</param>
+        /// <param name="TradeIDs">List of Trade ID&#39;s identifying the open trades that will be closed when their respective instruments become tradable.</param>
         public DelayedTradeClosureTransaction(string Id = default(string), string Time = default(string), int? UserID = default(int?), string AccountID = default(string), string BatchID = default(string), string RequestID = default(string), TypeEnum? Type = default(TypeEnum?), ReasonEnum? Reason = default(ReasonEnum?), string TradeIDs = default(string))
         {
             this.Id = Id;
@@ -355,9 +355,9 @@ namespace Oanda.RestV20.Model
         [DataMember(Name="requestID", EmitDefaultValue=false)]
         public string RequestID { get; set; }
         /// <summary>
-        /// List of Trade ID&#39;s identifying the open trades that will be closed when their respective instruments become tradeable
+        /// List of Trade ID&#39;s identifying the open trades that will be closed when their respective instruments become tradable
         /// </summary>
-        /// <value>List of Trade ID&#39;s identifying the open trades that will be closed when their respective instruments become tradeable</value>
+        /// <value>List of Trade ID&#39;s identifying the open trades that will be closed when their respective instruments become tradable</value>
         [DataMember(Name="tradeIDs", EmitDefaultValue=false)]
         public string TradeIDs { get; set; }
         /// <summary>

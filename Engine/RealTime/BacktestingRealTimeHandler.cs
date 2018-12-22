@@ -55,10 +55,10 @@ namespace QuantConnect.Lean.Engine.RealTime
             _algorithm = algorithm;
             _resultHandler =  resultHandler;
 
-            // create events for algorithm's end of tradeable dates
+            // create events for algorithm's end of tradable dates
             Add(ScheduledEventFactory.EveryAlgorithmEndOfDay(_algorithm, _resultHandler, _algorithm.StartDate, _algorithm.EndDate, ScheduledEvent.AlgorithmEndOfDayDelta));
 
-            // set up the events for each security to fire every tradeable date before market close
+            // set up the events for each security to fire every tradable date before market close
             foreach (var kvp in _algorithm.Securities)
             {
                 var security = kvp.Value;

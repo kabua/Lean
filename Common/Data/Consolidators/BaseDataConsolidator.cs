@@ -26,7 +26,7 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Create a new TickConsolidator for the desired resolution
         /// </summary>
-        /// <param name="resolution">The resoluton desired</param>
+        /// <param name="resolution">The resolution desired</param>
         /// <returns>A consolidator that produces data on the resolution interval</returns>
         public static BaseDataConsolidator FromResolution(Resolution resolution)
         {

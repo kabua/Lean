@@ -219,7 +219,7 @@ namespace Oanda.RestV20.Api
         /// Account Instruments
         /// </summary>
         /// <remarks>
-        /// Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </remarks>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>
@@ -232,7 +232,7 @@ namespace Oanda.RestV20.Api
         /// Account Instruments
         /// </summary>
         /// <remarks>
-        /// Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </remarks>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>
@@ -1136,7 +1136,7 @@ namespace Oanda.RestV20.Api
         /// Account Instruments
         /// </summary>
         /// <remarks>
-        /// Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </remarks>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>
@@ -1149,7 +1149,7 @@ namespace Oanda.RestV20.Api
         /// Account Instruments
         /// </summary>
         /// <remarks>
-        /// Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </remarks>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>
@@ -3236,7 +3236,7 @@ namespace Oanda.RestV20.Api
         }
 
         /// <summary>
-        /// Account Instruments Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Account Instruments Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </summary>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>
@@ -3250,7 +3250,7 @@ namespace Oanda.RestV20.Api
         }
 
         /// <summary>
-        /// Account Instruments Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Account Instruments Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </summary>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>
@@ -3316,7 +3316,7 @@ namespace Oanda.RestV20.Api
         }
 
         /// <summary>
-        /// Account Instruments Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Account Instruments Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </summary>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>
@@ -3331,7 +3331,7 @@ namespace Oanda.RestV20.Api
         }
 
         /// <summary>
-        /// Account Instruments Get the list of tradeable instruments for the given Account. The list of tradeable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
+        /// Account Instruments Get the list of tradable instruments for the given Account. The list of tradable instruments is dependent on the regulatory division that the Account is located in, thus should be the same for all Accounts owned by a single user.
         /// </summary>
         /// <exception cref="Oanda.RestV20.Client.ApiException">Thrown when fails to make API call</exception>
         /// <param name="authorization">The authorization bearer token previously obtained by the client</param>

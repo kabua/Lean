@@ -49,7 +49,7 @@ namespace QuantConnect.Algorithm
         /// <param name="symbol">The symbol whose AD we want</param>
         /// <param name="resolution">The resolution</param>
         /// <param name="selector">Selects a value from the BaseData to send into the indicator, if null defaults to the Value property of BaseData (x => x.Value)</param>
-        /// <returns>The AccumulationDistribution indicator for the requested symbol over the speified period</returns>
+        /// <returns>The AccumulationDistribution indicator for the requested symbol over the specified period</returns>
         public AccumulationDistribution AD(Symbol symbol, Resolution? resolution = null, Func<IBaseData, TradeBar> selector = null)
         {
             var name = CreateIndicatorName(symbol, "AD", resolution);
@@ -66,7 +66,7 @@ namespace QuantConnect.Algorithm
         /// <param name="slowPeriod">The slow moving average period</param>
         /// <param name="resolution">The resolution</param>
         /// <param name="selector">Selects a value from the BaseData to send into the indicator, if null defaults to the Value property of BaseData (x => x.Value)</param>
-        /// <returns>The AccumulationDistributionOscillator indicator for the requested symbol over the speified period</returns>
+        /// <returns>The AccumulationDistributionOscillator indicator for the requested symbol over the specified period</returns>
         public AccumulationDistributionOscillator ADOSC(Symbol symbol, int fastPeriod, int slowPeriod, Resolution? resolution = null, Func<IBaseData, TradeBar> selector = null)
         {
             var name = CreateIndicatorName(symbol, string.Format("ADOSC({0},{1})", fastPeriod, slowPeriod), resolution);
@@ -1008,7 +1008,7 @@ namespace QuantConnect.Algorithm
         /// <param name="period">The period over which to compute the STD</param>
         /// <param name="resolution">The resolution</param>
         /// <param name="selector">Selects a value from the BaseData to send into the indicator, if null defaults to the Value property of BaseData (x => x.Value)</param>
-        /// <returns>The StandardDeviation indicator for the requested symbol over the speified period</returns>
+        /// <returns>The StandardDeviation indicator for the requested symbol over the specified period</returns>
         public StandardDeviation STD(Symbol symbol, int period, Resolution? resolution = null, Func<IBaseData, decimal> selector = null)
         {
             var name = CreateIndicatorName(symbol, "STD" + period, resolution);
@@ -1185,7 +1185,7 @@ namespace QuantConnect.Algorithm
         /// <param name="period">The period over which to compute the VAR</param>
         /// <param name="resolution">The resolution</param>
         /// <param name="selector">Selects a value from the BaseData to send into the indicator, if null defaults to the Value property of BaseData (x => x.Value)</param>
-        /// <returns>The Variance indicator for the requested symbol over the speified period</returns>
+        /// <returns>The Variance indicator for the requested symbol over the specified period</returns>
         public Variance VAR(Symbol symbol, int period, Resolution? resolution = null, Func<IBaseData, decimal> selector = null)
         {
             var name = CreateIndicatorName(symbol, "VAR" + period, resolution);
@@ -1510,7 +1510,7 @@ namespace QuantConnect.Algorithm
         /// <summary>
         /// Gets the default consolidator for the specified symbol and resolution
         /// </summary>
-        /// <param name="symbol">The symbo whose data is to be consolidated</param>
+        /// <param name="symbol">The symbol whose data is to be consolidated</param>
         /// <param name="timeSpan">The requested time span for the consolidator, if null, uses the resolution from subscription</param>
         /// <returns>The new default consolidator</returns>
         public IDataConsolidator ResolveConsolidator(Symbol symbol, TimeSpan? timeSpan)

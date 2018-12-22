@@ -89,8 +89,8 @@ namespace QuantConnect.Algorithm.Framework.Portfolio
         /// Create portfolio targets from the specified insights
         /// </summary>
         /// <param name="algorithm">The algorithm instance</param>
-        /// <param name="insights">The insights to create portoflio targets from</param>
-        /// <returns>An enumerable of portoflio targets to be sent to the execution model</returns>
+        /// <param name="insights">The insights to create portfolio targets from</param>
+        /// <returns>An enumerable of portfolio targets to be sent to the execution model</returns>
         public override IEnumerable<IPortfolioTarget> CreateTargets(QCAlgorithmFramework algorithm, Insight[] insights)
         {
             var targets = new List<IPortfolioTarget>();

@@ -550,7 +550,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
 
         /// <summary>
         /// Distinguishes between the different ways an insight's period/close times can be specified
-        /// This was really only required since we can't properly acces certain data from within a static
+        /// This was really only required since we can't properly access certain data from within a static
         /// context (such as Insight.Price) or from within a constructor w/out requiring the users to properly
         /// fetch the required data and supply it as an argument.
         /// </summary>

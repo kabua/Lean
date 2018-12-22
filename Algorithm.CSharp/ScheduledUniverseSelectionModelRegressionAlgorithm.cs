@@ -27,7 +27,7 @@ using QuantConnect.Interfaces;
 namespace QuantConnect.Algorithm.CSharp
 {
     /// <summary>
-    /// Regression algortihm for testing <see cref="ScheduledUniverseSelectionModel"/> scheduling functions
+    /// Regression algorithm for testing <see cref="ScheduledUniverseSelectionModel"/> scheduling functions
     /// </summary>
     public class ScheduledUniverseSelectionModelRegressionAlgorithm : QCAlgorithmFramework, IRegressionAlgorithmDefinition
     {

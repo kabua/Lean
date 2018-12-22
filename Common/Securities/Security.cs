@@ -235,7 +235,7 @@ namespace QuantConnect.Securities
         /// Customizable data filter to filter outlier ticks before they are passed into user event handlers.
         /// By default all ticks are passed into the user algorithms.
         /// </summary>
-        /// <remarks>TradeBars (seconds and minute bars) are prefiltered to ensure the ticks which build the bars are realistically tradeable</remarks>
+        /// <remarks>TradeBars (seconds and minute bars) are prefiltered to ensure the ticks which build the bars are realistically tradable</remarks>
         /// <seealso cref="EquityDataFilter"/>
         /// <seealso cref="ForexDataFilter"/>
         public ISecurityDataFilter DataFilter

@@ -85,7 +85,7 @@ namespace QuantConnect.Algorithm.CSharp
 
     /// <summary>
     /// In CBOE/VIX data, there is a "vix close" column instead of "close" which is the 
-    /// default column namein LEAN Quandl custom data implementation.
+    /// default column name in LEAN Quandl custom data implementation.
     /// This class assigns new column name to match the the external datasource setting.
     /// </summary>
     public class QuandlVix : Quandl

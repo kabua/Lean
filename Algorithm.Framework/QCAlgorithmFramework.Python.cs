@@ -64,7 +64,7 @@ namespace QuantConnect.Algorithm.Framework
         /// <summary>
         /// Sets the portfolio construction model
         /// </summary>
-        /// <param name="portfolioConstruction">Model defining how to build a portoflio from alphas</param>
+        /// <param name="portfolioConstruction">Model defining how to build a portfolio from alphas</param>
         public void SetPortfolioConstruction(PyObject portfolioConstruction)
         {
             IPortfolioConstructionModel model;

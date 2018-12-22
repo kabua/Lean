@@ -26,7 +26,7 @@ using QuantConnect.Securities;
 namespace QuantConnect.Algorithm.CSharp
 {
     /// <summary>
-    /// Demonstration of using custom fee, slippage and fill models for modelling transactions in backtesting.
+    /// Demonstration of using custom fee, slippage and fill models for modeling transactions in backtesting.
     /// QuantConnect allows you to model all orders as deeply and accurately as you need.
     /// </summary>
     /// <meta name="tag" content="trading and orders" />

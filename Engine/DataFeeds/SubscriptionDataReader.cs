@@ -471,8 +471,8 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                     return _subscriptionFactoryEnumerator;
                 }
 
-                // keep churning until we find a new source or run out of tradeable dates
-                // in live mode tradeable dates won't advance beyond today's date, but
+                // keep churning until we find a new source or run out of tradable dates
+                // in live mode tradable dates won't advance beyond today's date, but
                 // TryGetNextDate will return false if it's already at today
             }
             while (true);
@@ -542,9 +542,9 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         }
 
         /// <summary>
-        /// Iterates the tradeable dates enumerator
+        /// Iterates the tradable dates enumerator
         /// </summary>
-        /// <param name="date">The next tradeable date</param>
+        /// <param name="date">The next tradable date</param>
         /// <returns>True if we got a new date from the enumerator, false if it's exhausted, or in live mode if we're already at today</returns>
         private bool TryGetNextDate(out DateTime date)
         {
@@ -585,7 +585,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                 return true;
             }
 
-            // no more tradeable dates, we've exhausted the enumerator
+            // no more tradable dates, we've exhausted the enumerator
             date = DateTime.MaxValue.Date;
             return false;
         }

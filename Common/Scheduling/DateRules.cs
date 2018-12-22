@@ -87,7 +87,7 @@ namespace QuantConnect.Scheduling
         /// <summary>
         /// Specifies an event should fire every day the symbol is trading
         /// </summary>
-        /// <param name="symbol">The symbol whose exchange is used to determine tradeable dates</param>
+        /// <param name="symbol">The symbol whose exchange is used to determine tradable dates</param>
         /// <returns>A date rule that fires every day the specified symbol trades</returns>
         public IDateRule EveryDay(Symbol symbol)
         {
@@ -105,12 +105,12 @@ namespace QuantConnect.Scheduling
         }
 
         /// <summary>
-        /// Specifies an event should fire on the first tradeable date for the specified
+        /// Specifies an event should fire on the first tradable date for the specified
         /// symbol of each month
         /// </summary>
         /// <param name="symbol">The symbol whose exchange is used to determine the first
-        /// tradeable date of the month</param>
-        /// <returns>A date rule that fires on the first tradeable date for the specified security each month</returns>
+        /// tradable date of the month</param>
+        /// <returns>A date rule that fires on the first tradable date for the specified security each month</returns>
         public IDateRule MonthStart(Symbol symbol)
         {
             return new FuncDateRule(symbol.Value + ": MonthStart", (start, end) => MonthStartIterator(GetSecurity(symbol), start, end));
@@ -126,12 +126,12 @@ namespace QuantConnect.Scheduling
         }
 
         /// <summary>
-        /// Specifies an event should fire on the last tradeable date for the specified
+        /// Specifies an event should fire on the last tradable date for the specified
         /// symbol of each month
         /// </summary>
         /// <param name="symbol">The symbol whose exchange is used to determine the last
-        /// tradeable date of the month</param>
-        /// <returns>A date rule that fires on the last tradeable date for the specified security each month</returns>
+        /// tradable date of the month</param>
+        /// <returns>A date rule that fires on the last tradable date for the specified security each month</returns>
         public IDateRule MonthEnd(Symbol symbol)
         {
             return new FuncDateRule(symbol.Value + ": MonthEnd", (start, end) => MonthEndIterator(GetSecurity(symbol), start, end));
@@ -147,12 +147,12 @@ namespace QuantConnect.Scheduling
         }
 
         /// <summary>
-        /// Specifies an event should fire on the first tradeable date for the specified
+        /// Specifies an event should fire on the first tradable date for the specified
         /// symbol of each week
         /// </summary>
         /// <param name="symbol">The symbol whose exchange is used to determine the first
-        /// tradeable date of the week</param>
-        /// <returns>A date rule that fires on the first tradeable date for the specified security each week</returns>
+        /// tradable date of the week</param>
+        /// <returns>A date rule that fires on the first tradable date for the specified security each week</returns>
         public IDateRule WeekStart(Symbol symbol)
         {
             return new FuncDateRule(symbol.Value + ": WeekStart", (start, end) => WeekStartIterator(GetSecurity(symbol), start, end));
@@ -168,12 +168,12 @@ namespace QuantConnect.Scheduling
         }
 
         /// <summary>
-        /// Specifies an event should fire on the last tradeable date for the specified
+        /// Specifies an event should fire on the last tradable date for the specified
         /// symbol of each week
         /// </summary>
         /// <param name="symbol">The symbol whose exchange is used to determine the last
-        /// tradeable date of the week</param>
-        /// <returns>A date rule that fires on the last tradeable date for the specified security each week</returns>
+        /// tradable date of the week</param>
+        /// <returns>A date rule that fires on the last tradable date for the specified security each week</returns>
         public IDateRule WeekEnd(Symbol symbol)
         {
             return new FuncDateRule(symbol.Value + ": WeekEnd", (start, end) => WeekEndIterator(GetSecurity(symbol), start, end));
@@ -217,7 +217,7 @@ namespace QuantConnect.Scheduling
                     {
                         // only emit if the date is on or after the start
                         // the date may be before here because we backed up a month
-                        // to properly resolve the first tradeable date
+                        // to properly resolve the first tradable date
                         yield return date;
                     }
                     lastMonth = date.Month;

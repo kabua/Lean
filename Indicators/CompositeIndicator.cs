@@ -79,7 +79,7 @@ namespace QuantConnect.Indicators
         /// </summary>
         /// <param name="name">The name of this indicator</param>
         /// <param name="left">The left indicator for the 'composer'</param>
-        /// <param name="right">The right indidcator for the 'composoer'</param>
+        /// <param name="right">The right indicator for the 'composer'</param>
         /// <param name="composer">Function used to compose the left and right indicators</param>
         public CompositeIndicator(string name, IndicatorBase<T> left, IndicatorBase<T> right, IndicatorComposer composer)
             : base(name)
@@ -95,7 +95,7 @@ namespace QuantConnect.Indicators
         /// and producing a new value via the composer delegate specified
         /// </summary>
         /// <param name="left">The left indicator for the 'composer'</param>
-        /// <param name="right">The right indidcator for the 'composoer'</param>
+        /// <param name="right">The right indicator for the 'composer'</param>
         /// <param name="composer">Function used to compose the left and right indicators</param>
         public CompositeIndicator(IndicatorBase<T> left, IndicatorBase<T> right, IndicatorComposer composer)
             : this(string.Format("COMPOSE({0},{1})", left.Name, right.Name), left, right, composer)
@@ -138,7 +138,7 @@ namespace QuantConnect.Indicators
 
             // wire up the Updated events such that when we get a new piece of data from both left and right
             // we'll call update on this indicator. It's important to note that the CompositeIndicator only uses
-            // the timestamp that gets passed into the Update function, his compuation is soley a function
+            // the timestamp that gets passed into the Update function, his computation is soley a function
             // of the left and right indicator via '_composer'
 
             IndicatorDataPoint newLeftData = null;

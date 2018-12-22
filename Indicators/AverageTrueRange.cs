@@ -21,7 +21,7 @@ namespace QuantConnect.Indicators
     /// <summary>
     /// The AverageTrueRange indicator is a measure of volatility introduced by Welles Wilder in his
     /// book: New Concepts in Technical Trading Systems.  This indicator computes the TrueRange and then
-    /// smoothes the TrueRange over a given period.
+    /// smooths the TrueRange over a given period.
     /// 
     /// TrueRange is defined as the maximum of the following:
     ///   High - Low

@@ -231,7 +231,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         }
 
         /// <summary>
-        /// Remove all expired insights from the collection and retuns them
+        /// Remove all expired insights from the collection and returns them
         /// </summary>
         /// <param name="utcTime">Time that determines whether the insight has expired</param>
         /// <returns>Expired insights that were removed</returns>

@@ -530,7 +530,7 @@ namespace QuantConnect.Lean.Engine.Results
         }
 
         /// <summary>
-        /// Send list of security asset types the algortihm uses to browser.
+        /// Send list of security asset types the algorithm uses to browser.
         /// </summary>
         public void SecurityType(List<SecurityType> types)
         {

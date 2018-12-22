@@ -62,7 +62,7 @@ namespace QuantConnect.Algorithm.CSharp
         }
 
         /// <summary>
-        /// OnData is the primary entry point for youm algorithm. New data is piped into your algorithm here
+        /// OnData is the primary entry point for your algorithm. New data is piped into your algorithm here
         /// via TradeBars objects.
         /// </summary>
         /// <param name="data">TradeBars IDictionary object</param>

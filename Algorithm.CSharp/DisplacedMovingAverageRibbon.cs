@@ -25,7 +25,7 @@ namespace QuantConnect.Algorithm.CSharp
     /// <summary>
     /// Constructs a displaced moving average ribbon and buys when all are lined up, liquidates when they all line down
     /// Ribbons are great for visualizing trends
-    ///   Signals are generated when they all line up in a paricular direction
+    ///   Signals are generated when they all line up in a particular direction
     ///     A buy signal is when the values of the indicators are increasing (from slowest to fastest).
     ///     A sell signal is when the values of the indicators are decreasing (from slowest to fastest).
     /// </summary>
@@ -64,7 +64,7 @@ namespace QuantConnect.Algorithm.CSharp
                 // define an indicator that takes the output of the sma and pipes it into our delay indicator
                 var delayedSma = delay.Of(sma);
 
-                // register our new 'delayedSma' for automaic updates on a daily resolution
+                // register our new 'delayedSma' for automatic updates on a daily resolution
                 RegisterIndicator(_spy, delayedSma, Resolution.Daily, data => data.Value);
 
                 return delayedSma;

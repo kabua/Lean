@@ -115,7 +115,7 @@ namespace QuantConnect.Packets
         public double ProcessingTime = 0;
 
         /// <summary>
-        /// Estimated number of tradeable days in the backtest based on the start and end date or the backtest
+        /// Estimated number of tradable days in the backtest based on the start and end date or the backtest
         /// </summary>
         [JsonProperty(PropertyName = "iTradeableDates")]
         public int TradeableDates = 0;

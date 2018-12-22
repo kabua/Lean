@@ -132,7 +132,7 @@ namespace QuantConnect.Algorithm.CSharp.Alphas
 			var period = TimeSpan.FromMinutes(5);
 			var magnitude = 0.0005;
 
-	   		// We will create our insights when we recieve news
+	   		// We will create our insights when we receive news
 			if (data.ContainsKey("DFX"))
 			{
 	   			var calendar = data.Get<DailyFx>("DFX");

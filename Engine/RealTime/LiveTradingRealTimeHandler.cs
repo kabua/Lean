@@ -78,7 +78,7 @@ namespace QuantConnect.Lean.Engine.RealTime
                 RefreshMarketHoursToday(triggerTime.ConvertFromUtc(_algorithm.TimeZone).Date);
             }));
 
-            // add end of day events for each tradeable day
+            // add end of day events for each tradable day
             Add(ScheduledEventFactory.EveryAlgorithmEndOfDay(_algorithm, _resultHandler, todayInAlgorithmTimeZone, Time.EndOfTime, ScheduledEvent.AlgorithmEndOfDayDelta, DateTime.UtcNow));
 
             // add end of trading day events for each security

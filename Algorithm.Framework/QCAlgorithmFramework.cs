@@ -267,7 +267,7 @@ namespace QuantConnect.Algorithm.Framework
         /// <summary>
         /// Sets the portfolio construction model
         /// </summary>
-        /// <param name="portfolioConstruction">Model defining how to build a portoflio from insights</param>
+        /// <param name="portfolioConstruction">Model defining how to build a portfolio from insights</param>
         public void SetPortfolioConstruction(IPortfolioConstructionModel portfolioConstruction)
         {
             PortfolioConstruction = portfolioConstruction;
@@ -297,9 +297,9 @@ namespace QuantConnect.Algorithm.Framework
         /// <remarks>
         /// This method is sealed because the framework must be able to force setting of the
         /// generated and close times before any event handlers are run. Bind directly to the
-        /// <see cref="QCAlgorithm.InsightsGenerated"/> event insead of overriding.
+        /// <see cref="QCAlgorithm.InsightsGenerated"/> event instead of overriding.
         /// </remarks>
-        /// <param name="insights">The collection of insights generaed at the current time step</param>
+        /// <param name="insights">The collection of insights generated at the current time step</param>
         protected sealed override void OnInsightsGenerated(IEnumerable<Insight> insights)
         {
             // set values not required to be set by alpha models

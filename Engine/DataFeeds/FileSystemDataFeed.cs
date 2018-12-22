@@ -95,7 +95,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             if (!request.TradableDays.Any())
             {
                 _algorithm.Error(
-                    $"No data loaded for {request.Security.Symbol} because there were no tradeable dates for this security."
+                    $"No data loaded for {request.Security.Symbol} because there were no tradable dates for this security."
                 );
                 return null;
             }

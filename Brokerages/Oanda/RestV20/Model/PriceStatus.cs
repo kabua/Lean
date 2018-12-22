@@ -32,15 +32,15 @@ namespace Oanda.RestV20.Model
     {
         
         /// <summary>
-        /// Enum Tradeable for "tradeable"
+        /// Enum Tradeable for "tradable"
         /// </summary>
-        [EnumMember(Value = "tradeable")]
+        [EnumMember(Value = "tradable")]
         Tradeable,
         
         /// <summary>
-        /// Enum Nontradeable for "non-tradeable"
+        /// Enum Nontradeable for "non-tradable"
         /// </summary>
-        [EnumMember(Value = "non-tradeable")]
+        [EnumMember(Value = "non-tradable")]
         Nontradeable,
         
         /// <summary>

@@ -288,7 +288,7 @@ namespace QuantConnect
 
 
         /// <summary>
-        /// Define an enumerable date range of tradeable dates - skip the holidays and weekends when securities in this algorithm don't trade.
+        /// Define an enumerable date range of tradable dates - skip the holidays and weekends when securities in this algorithm don't trade.
         /// </summary>
         /// <param name="securities">Securities we have in portfolio</param>
         /// <param name="from">Start date</param>
@@ -307,9 +307,9 @@ namespace QuantConnect
 
 
         /// <summary>
-        /// Define an enumerable date range of tradeable dates - skip the holidays and weekends when securities in this algorithm don't trade.
+        /// Define an enumerable date range of tradable dates - skip the holidays and weekends when securities in this algorithm don't trade.
         /// </summary>
-        /// <param name="security">The security to get tradeable dates for</param>
+        /// <param name="security">The security to get tradable dates for</param>
         /// <param name="from">Start date</param>
         /// <param name="thru">End date</param>
         /// <returns>Enumerable date range</returns>
@@ -320,9 +320,9 @@ namespace QuantConnect
 
 
         /// <summary>
-        /// Define an enumerable date range of tradeable dates - skip the holidays and weekends when securities in this algorithm don't trade.
+        /// Define an enumerable date range of tradable dates - skip the holidays and weekends when securities in this algorithm don't trade.
         /// </summary>
-        /// <param name="exchange">The security to get tradeable dates for</param>
+        /// <param name="exchange">The security to get tradable dates for</param>
         /// <param name="from">Start date</param>
         /// <param name="thru">End date</param>
         /// <returns>Enumerable date range</returns>
@@ -338,7 +338,7 @@ namespace QuantConnect
         }
 
         /// <summary>
-        /// Define an enumerable date range of tradeable dates but expressed in a different time zone.
+        /// Define an enumerable date range of tradable dates but expressed in a different time zone.
         /// </summary>
         /// <remarks>
         /// This is mainly used to bridge the gap between exchange time zone and data time zone for file written to disk. The returned
@@ -382,7 +382,7 @@ namespace QuantConnect
         /// </summary>
         /// <param name="securities">Security manager from the algorithm</param>
         /// <param name="day">DateTime to check if trade-able.</param>
-        /// <returns>True if tradeable date</returns>
+        /// <returns>True if tradable date</returns>
         public static bool TradableDate(IEnumerable<Security> securities, DateTime day)
         {
             try
@@ -401,7 +401,7 @@ namespace QuantConnect
 
 
         /// <summary>
-        /// Could of the number of tradeable dates within this period.
+        /// Could of the number of tradable dates within this period.
         /// </summary>
         /// <param name="securities">Securities we're trading</param>
         /// <param name="start">Start of Date Loop</param>

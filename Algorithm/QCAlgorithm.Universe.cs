@@ -159,7 +159,7 @@ namespace QuantConnect.Algorithm
         }
 
         /// <summary>
-        /// Gets a helper that provides pre-defined universe defintions, such as top dollar volume
+        /// Gets a helper that provides pre-defined universe definitions, such as top dollar volume
         /// </summary>
         public UniverseDefinitions Universe
         {

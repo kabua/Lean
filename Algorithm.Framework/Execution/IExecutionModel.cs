@@ -19,7 +19,7 @@ using QuantConnect.Algorithm.Framework.Portfolio;
 namespace QuantConnect.Algorithm.Framework.Execution
 {
     /// <summary>
-    /// Algorithm framework model that executes portoflio targets
+    /// Algorithm framework model that executes portfolio targets
     /// </summary>
     public interface IExecutionModel : INotifiedSecurityChanges
     {

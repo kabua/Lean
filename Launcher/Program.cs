@@ -106,6 +106,7 @@ namespace QuantConnect.Lean.Launcher
                 throw;
             }
 
+            Process desktopProcess = null;
             if (environment.EndsWith("-desktop"))
             {
                 var info = new ProcessStartInfo
@@ -114,7 +115,8 @@ namespace QuantConnect.Lean.Launcher
                     FileName  = Config.Get("desktop-exe"),
                     Arguments = Config.Get("desktop-http-port")
                 };
-                Process.Start(info);
+
+                desktopProcess = Process.Start(info);
             }
 
             // if the job version doesn't match this instance version then we can't process it
@@ -153,6 +155,7 @@ namespace QuantConnect.Lean.Launcher
 
                 Log.Trace("Program.Main(): Exiting Lean...");
 
+                desktopProcess?.Kill();
                 Environment.Exit(0);
             }
         }
