@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using QuantConnect.Interfaces;
-using QuantConnect.Logging;
-using QuantConnect.Messaging;
-using QuantConnect.Packets;
 using Gecko;
 using Gecko.JQuery;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using QuantConnect.Logging;
+using QuantConnect.Packets;
+using QuantConnect.Views.Properties;
 
 namespace QuantConnect.Views.WinForms
 {
@@ -21,6 +20,11 @@ namespace QuantConnect.Views.WinForms
         private bool _liveMode = false;
         private AlgorithmNodePacket _job;
 
+        static LeanWinForm()
+        {
+            _settings = new Settings { SettingsKey = "MainWindow" };
+        }
+
         /// <summary>
         /// Create the UX.
         /// </summary>
@@ -28,9 +32,9 @@ namespace QuantConnect.Views.WinForms
         {
             InitializeComponent();
 
-            //Form Setup:
-            CenterToScreen();
-            WindowState = FormWindowState.Maximized;
+            ////Form Setup:
+            //CenterToScreen();
+            //WindowState = FormWindowState.Maximized;
             Text = "QuantConnect Lean Algorithmic Trading Engine: v" + Globals.Version;
 
             //GECKO WEB BROWSER: Create the browser control
@@ -87,7 +91,8 @@ namespace QuantConnect.Views.WinForms
         /// <param name="packet">Backtest results</param>
         public void DisplayBacktestResultsPacket(BacktestResultPacket packet)
         {
-            if (packet.Progress != 1) return;
+            if (packet.Progress != 1)
+                return;
 
             //Remove previous event handler:
             var url = GetUrl(_job, _liveMode, true);
@@ -168,6 +173,40 @@ namespace QuantConnect.Views.WinForms
             _logging.Trace(packet.Message);
         }
 
+        public void SetPosition()
+        {
+            if (_settings.Size.Width > 0.0 && _settings.Size.Height > 0.0)
+            {
+                WindowState = (FormWindowState) _settings.WindowState;
+
+                if (WindowState == FormWindowState.Normal)
+                {
+                    var location = _settings.Location;
+                    var size = _settings.Size;
+
+                    Top = location.Y;
+                    Left = location.X;
+
+                    Width = size.Width;
+                    Height = size.Height;
+                }
+            }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            SavePosition();
+        }
+
+        public void SavePosition()
+        {
+            _settings.WindowState = (int) WindowState;
+            _settings.Location = new Point(Left, Top);
+            _settings.Size = new Size(Width, Height);
+
+            _settings.Save();
+        }
+
         /// <summary>
         /// Get the URL for the embedded charting
         /// </summary>
@@ -195,23 +234,24 @@ namespace QuantConnect.Views.WinForms
             StatisticsToolStripStatusLabel.Text = string.Concat("Performance: CPU: ", OS.CpuUsage.NextValue().ToString("0.0"), "%",
                                                                 " Ram: ", OS.TotalPhysicalMemoryUsed, " Mb");
 
-            if (_logging == null) return;
+            if (_logging == null)
+                return;
 
             LogEntry log;
             while (_logging.Logs.TryDequeue(out log))
             {
                 switch (log.MessageType)
                 {
-                    case LogType.Debug:
-                        LogTextBox.AppendText(log.ToString(), Color.Black);
-                        break;
-                    default:
-                    case LogType.Trace:
-                        LogTextBox.AppendText(log.ToString(), Color.Black);
-                        break;
-                    case LogType.Error:
-                        LogTextBox.AppendText(log.ToString(), Color.DarkRed);
-                        break;
+                case LogType.Debug:
+                    LogTextBox.AppendText(log.ToString(), Color.Black);
+                    break;
+                default:
+                case LogType.Trace:
+                    LogTextBox.AppendText(log.ToString(), Color.Black);
+                    break;
+                case LogType.Error:
+                    LogTextBox.AppendText(log.ToString(), Color.DarkRed);
+                    break;
                 }
             }
         }
@@ -229,5 +269,7 @@ namespace QuantConnect.Views.WinForms
 #endif
             Environment.Exit(0);
         }
+
+        private static readonly Settings _settings;
     }
 }

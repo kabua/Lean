@@ -33,6 +33,8 @@ namespace QuantConnect.Lean.Launcher
 
         static Program()
         {
+            PositionConsoleWindow = new PositionConsoleWindow("MainWindow");
+
             AppDomain.CurrentDomain.AssemblyLoad += (sender, e) =>
             {
                 if (e.LoadedAssembly.FullName.ToLower().Contains("python"))
@@ -42,16 +44,18 @@ namespace QuantConnect.Lean.Launcher
             };
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             //Initialize:
             var mode = "RELEASE";
-            #if DEBUG
-                mode = "DEBUG";
-            #endif
+#if DEBUG
+            mode = "DEBUG";
+#endif
+
+            PositionConsoleWindow.SetPosition();
 
             if (OS.IsWindows)
-            { 
+            {
                 Console.OutputEncoding = System.Text.Encoding.Unicode;
             }
 
@@ -65,7 +69,7 @@ namespace QuantConnect.Lean.Launcher
             var liveMode = Config.GetBool("live-mode");
             Log.DebuggingEnabled = Config.GetBool("debug-mode");
             Log.LogHandler = Composer.Instance.GetExportedValueByTypeName<ILogHandler>(Config.Get("log-handler", "CompositeLogHandler"));
-   
+
             //Name thread for the profiler:
             Thread.CurrentThread.Name = "Algorithm Analysis Thread";
             Log.Trace("Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v" + Globals.Version + " Mode: " + mode + " (" + (Environment.Is64BitProcess ? "64" : "32") + "bit)");
@@ -76,11 +80,23 @@ namespace QuantConnect.Lean.Launcher
             {
                 var fileName = Config.Get("desktop-exe");
                 var existingProcess = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(fileName)).FirstOrDefault();
-                existingProcess?.Kill();
+
+                if (existingProcess != null)
+                {
+                    existingProcess.Kill();
+                    while (!existingProcess.HasExited)
+                    {
+                        Thread.Sleep(TimeSpan.FromMilliseconds(100));
+                    }
+
+                    // Give the OS time to close things
+                    //
+                    Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                }
             }
 
             //Import external libraries specific to physical server location (cloud/local)
-                LeanEngineSystemHandlers leanEngineSystemHandlers;
+            LeanEngineSystemHandlers leanEngineSystemHandlers;
             try
             {
                 leanEngineSystemHandlers = LeanEngineSystemHandlers.FromConfiguration(Composer.Instance);
@@ -102,7 +118,7 @@ namespace QuantConnect.Lean.Launcher
             {
                 throw new Exception("Engine.Main(): Job was null.");
             }
-            
+
             LeanEngineAlgorithmHandlers leanEngineAlgorithmHandlers;
             try
             {
@@ -120,7 +136,7 @@ namespace QuantConnect.Lean.Launcher
                 var info = new ProcessStartInfo
                 {
                     UseShellExecute = false,
-                    FileName  = Config.Get("desktop-exe"),
+                    FileName = Config.Get("desktop-exe"),
                     Arguments = Config.Get("desktop-http-port")
                 };
 
@@ -163,9 +179,12 @@ namespace QuantConnect.Lean.Launcher
 
                 Log.Trace("Program.Main(): Exiting Lean...");
 
+                PositionConsoleWindow.SavePosition();
                 desktopProcess?.Kill();
                 Environment.Exit(0);
             }
         }
+
+        private static readonly PositionConsoleWindow PositionConsoleWindow;
     }
 }

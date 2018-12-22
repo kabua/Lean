@@ -19,6 +19,7 @@ namespace QuantConnect.Views
             var port = args[0];
 
             var form = new LeanWinForm();
+            form.SetPosition();
 
             var desktopClient = new DesktopClient();
 
