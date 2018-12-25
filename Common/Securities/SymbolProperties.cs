@@ -68,6 +68,15 @@ namespace QuantConnect.Securities
         }
 
         /// <summary>
+        /// Get the number of digits the <see cref="MinimumPriceVariation"/> represents.
+        /// </summary>
+        public int Digits
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Creates an instance of the <see cref="SymbolProperties"/> class
         /// </summary>
         public SymbolProperties(string description, string quoteCurrency, decimal contractMultiplier, decimal minimumPriceVariation, decimal lotSize)
@@ -76,6 +85,7 @@ namespace QuantConnect.Securities
             QuoteCurrency = quoteCurrency;
             ContractMultiplier = contractMultiplier;
             MinimumPriceVariation = minimumPriceVariation;
+            Digits = (int) -Math.Log10((double) minimumPriceVariation);
             LotSize = lotSize;
             if(LotSize <= 0)
             {

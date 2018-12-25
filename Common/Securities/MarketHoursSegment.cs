@@ -26,6 +26,15 @@ namespace QuantConnect.Securities
     public class MarketHoursSegment
     {
         /// <summary>
+        /// Gets the logical day this segment represents
+        /// </summary>
+        /// <remarks>
+        /// If not specified in the json file, then it will be set to it's <see cref="LocalMarketHours.DayOfWeek"/> value.
+        /// </remarks>
+        [JsonProperty("logicalDay")]
+        public DayOfWeek? LogicalDayOfWeek { get; internal set; }
+
+        /// <summary>
         /// Gets the start time for this segment
         /// </summary>
         [JsonProperty("start")]
@@ -44,16 +53,29 @@ namespace QuantConnect.Securities
         public MarketHoursState State { get; private set; }
 
         /// <summary>
+        /// True if this segment marks the end of the normal market hours for this (logical) day.
+        /// </summary>
+        /// <remarks>
+        /// If not specified in the json file, then it will be set to last segment who <see cref="State"/> is equal to <see cref="MarketHoursState.Market"/>.
+        /// </remarks>
+        [JsonProperty("endOfDay")]
+        public bool? EndOfDay { get; internal set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MarketHoursSegment"/> class
         /// </summary>
         /// <param name="state">The state of the market during the specified times</param>
         /// <param name="start">The start time of the segment</param>
         /// <param name="end">The end time of the segment</param>
-        public MarketHoursSegment(MarketHoursState state, TimeSpan start, TimeSpan end)
+        /// <param name="endOfDay">True if this segment marks the end of the normal market hours for this (logical) day</param>
+        /// <param name="logicalDayOfWeek">The logical day this segment represents</param>
+        public MarketHoursSegment(MarketHoursState state, TimeSpan start, TimeSpan end, bool endOfDay, DayOfWeek? logicalDayOfWeek = null)
         {
             Start = start;
             End = end;
             State = state;
+            EndOfDay = endOfDay;
+            LogicalDayOfWeek = logicalDayOfWeek;
         }
 
         /// <summary>
@@ -61,7 +83,7 @@ namespace QuantConnect.Securities
         /// </summary>
         public static MarketHoursSegment OpenAllDay()
         {
-            return new MarketHoursSegment(MarketHoursState.Market, TimeSpan.Zero, Time.OneDay);
+            return new MarketHoursSegment(MarketHoursState.Market, TimeSpan.Zero, Time.OneDay, true);
         }
 
         /// <summary>
@@ -69,7 +91,7 @@ namespace QuantConnect.Securities
         /// </summary>
         public static MarketHoursSegment ClosedAllDay()
         {
-            return new MarketHoursSegment(MarketHoursState.Closed, TimeSpan.Zero, Time.OneDay);
+            return new MarketHoursSegment(MarketHoursState.Closed, TimeSpan.Zero, Time.OneDay, true);
         }
 
         /// <summary>
@@ -105,17 +127,17 @@ namespace QuantConnect.Securities
 
             if (extendedMarketOpen != marketOpen)
             {
-                segments.Add(new MarketHoursSegment(MarketHoursState.PreMarket, extendedMarketOpen, marketOpen));
+                segments.Add(new MarketHoursSegment(MarketHoursState.PreMarket, extendedMarketOpen, marketOpen, false));
             }
 
             if (marketOpen != TimeSpan.Zero || marketClose != TimeSpan.Zero)
             {
-                segments.Add(new MarketHoursSegment(MarketHoursState.Market, marketOpen, marketClose));
+                segments.Add(new MarketHoursSegment(MarketHoursState.Market, marketOpen, marketClose, true));
             }
 
             if (marketClose != extendedMarketClose)
             {
-                segments.Add(new MarketHoursSegment(MarketHoursState.PostMarket, marketClose, extendedMarketClose));
+                segments.Add(new MarketHoursSegment(MarketHoursState.PostMarket, marketClose, extendedMarketClose, false));
             }
 
             return segments.ToArray();

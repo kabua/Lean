@@ -82,6 +82,7 @@ namespace QuantConnect.Securities
                 && _segments[0].End == Time.OneDay
                 && _segments[0].State == MarketHoursState.Market;
 
+            var foundEndOfDayMarker = false;
             foreach (var segment in _segments)
             {
                 if (segment.State == MarketHoursState.PreMarket)
@@ -98,7 +99,20 @@ namespace QuantConnect.Securities
                 {
                     MarketDuration += segment.End - segment.Start;
                 }
+
+                if (!segment.LogicalDayOfWeek.HasValue)
+                    segment.LogicalDayOfWeek = DayOfWeek;
+
+                if (segment.EndOfDay.HasValue)
+                    foundEndOfDayMarker = true;
             }
+
+            if (foundEndOfDayMarker)
+                return;
+
+            var lastMarketSegment = _segments.LastOrDefault(s => s.State == MarketHoursState.Market);
+            if (lastMarketSegment != null)
+                lastMarketSegment.EndOfDay = true;
         }
 
         /// <summary>
@@ -181,7 +195,7 @@ namespace QuantConnect.Securities
                         return segment.End;
                     }
                 }
-                else if (segment.State == MarketHoursState.Market)
+                else if (segment.State == MarketHoursState.Market && segment.EndOfDay == true)
                 {
                     return segment.End;
                 }
@@ -267,7 +281,7 @@ namespace QuantConnect.Securities
         /// <returns>A <see cref="LocalMarketHours"/> instance that is always open</returns>
         public static LocalMarketHours OpenAllDay(DayOfWeek dayOfWeek)
         {
-            return new LocalMarketHours(dayOfWeek, new MarketHoursSegment(MarketHoursState.Market, TimeSpan.Zero, Time.OneDay));
+            return new LocalMarketHours(dayOfWeek, new MarketHoursSegment(MarketHoursState.Market, TimeSpan.Zero, Time.OneDay, true, dayOfWeek));
         }
 
         /// <summary>

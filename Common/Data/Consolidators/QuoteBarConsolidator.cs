@@ -79,7 +79,10 @@ namespace QuantConnect.Data.Consolidators
             // update the bid and ask
             if (bid != null)
             {
-                workingBar.LastBidSize += data.LastBidSize;
+                workingBar.LastBidSize = data.LastBidSize;
+                if (!data.IsFillForward)
+                    workingBar.BidSize += data.BidSize;
+
                 if (workingBar.Bid == null)
                 {
                     workingBar.Bid = new Bar(bid.Open, bid.High, bid.Low, bid.Close);
@@ -95,7 +98,10 @@ namespace QuantConnect.Data.Consolidators
             }
             if (ask != null)
             {
-                workingBar.LastAskSize += data.LastAskSize;
+                workingBar.LastAskSize = data.LastAskSize;
+                if (!data.IsFillForward)
+                    workingBar.AskSize += data.AskSize;
+
                 if (workingBar.Ask == null)
                 {
                     workingBar.Ask = new Bar(ask.Open, ask.High, ask.Low, ask.Close);

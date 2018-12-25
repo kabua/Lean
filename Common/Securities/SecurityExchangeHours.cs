@@ -367,5 +367,22 @@ namespace QuantConnect.Securities
 
             return date;
         }
+
+        /// <summary>
+        /// Try to get the logical day that this <paramref name="localDateTime"/>.
+        /// </summary>
+        /// <param name="localDateTime">The date time in question</param>
+        /// <returns></returns>
+        public DayOfWeek? TryGetLogicalDay(DateTime localDateTime)
+        {
+            var marketHours = GetMarketHours(localDateTime.DayOfWeek);
+            foreach (var segment in marketHours.Segments)
+            {
+                if (segment.Contains(localDateTime.TimeOfDay))
+                    return segment.LogicalDayOfWeek;
+            }
+
+            return null;
+        }
     }
 }
