@@ -27,8 +27,8 @@ namespace QuantConnect.Data.Consolidators
         /// Initializes a new instance of the <see cref="TickQuoteBarConsolidator"/> class
         /// </summary>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
-        public QuoteBarConsolidator(TimeSpan period)
-            : base(period)
+        public QuoteBarConsolidator(TimeSpan period, TimeSpan? dailyStartTime = null)
+            : base(period, dailyStartTime)
         {
         }
 

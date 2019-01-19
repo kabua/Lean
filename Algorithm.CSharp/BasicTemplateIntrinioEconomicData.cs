@@ -79,6 +79,10 @@ namespace QuantConnect.Algorithm.CSharp
             _spread = _brent.Minus(_wti);
 
             _emaWti = EMA(Securities[IntrinioEconomicDataSources.Commodities.CrudeOilWTI].Symbol, 10);
+
+            // TMF: Will this work vs. the foreach loop below?
+            //RegisterIndicator(Securities[IntrinioEconomicDataSources.Commodities.CrudeOilWTI].Symbol, _wti, null);
+            //RegisterIndicator(Securities[IntrinioEconomicDataSources.Commodities.CrudeOilBrent].Symbol, _brent, null);
         }
 
         /// <summary>

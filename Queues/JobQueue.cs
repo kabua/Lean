@@ -130,7 +130,7 @@ namespace QuantConnect.Queues
             var backtestJob = new BacktestNodePacket(0, 0, "", new byte[] {}, 10000, "local")
             {
                 Type = PacketType.BacktestNode,
-                Algorithm = File.ReadAllBytes(AlgorithmLocation),
+                //Algorithm = File.ReadAllBytes(AlgorithmLocation),
                 HistoryProvider = Config.Get("history-provider", DefaultHistoryProvider),
                 Channel = AccessToken,
                 UserToken = AccessToken,
@@ -179,15 +179,14 @@ namespace QuantConnect.Queues
         public void AcknowledgeJob(AlgorithmNodePacket job)
         {
             // Make the console window pause so we can read log output before exiting and killing the application completely
-            Console.WriteLine("Engine.Main(): Analysis Complete. Press any key to continue.");
+            Console.WriteLine("Engine.Main(): Analysis Complete.");
+            Console.WriteLine("Press X to exit the application.");
 
-            // Skip all Windows-Logo key clicks.
-            //
             ConsoleKeyInfo k;
             do
             {
                 k = System.Console.ReadKey(true);
-            } while (k.Key == ConsoleKey.LeftWindows);
+            } while (k.Key != ConsoleKey.X);
         }
     }
 }

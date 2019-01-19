@@ -77,6 +77,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\TradeRight\TradeRight.PrimeTime.QuantConnect\TradeRight.PrimeTime.QuantConnect.csproj">
+      <Project>{e2083fc6-4c63-43f5-8168-79b10a620844}</Project>
+      <Name>TradeRight.PrimeTime.QuantConnect</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Algorithm.CSharp\QuantConnect.Algorithm.CSharp.csproj">
       <Project>{39a81c16-a1e8-425e-a8f2-1433adb80228}</Project>
       <Name>QuantConnect.Algorithm.CSharp</Name>
@@ -136,10 +140,6 @@
     <ProjectReference Include="..\ToolBox\QuantConnect.ToolBox.csproj">
       <Project>{ac9a142c-b485-44d7-91ff-015c22c43d05}</Project>
       <Name>QuantConnect.ToolBox</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TradeRight.PrimeTime\TradeRight.PrimeTime.csproj">
-      <Project>{e2083fc6-4c63-43f5-8168-79b10a620844}</Project>
-      <Name>TradeRight.PrimeTime</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

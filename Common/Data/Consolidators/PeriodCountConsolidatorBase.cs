@@ -31,6 +31,11 @@ namespace QuantConnect.Data.Consolidators
     {
         //The minimum timespan between creating new bars.
         private readonly TimeSpan? _period;
+
+        //The offset the timespan represents
+        private readonly TimeSpan? _dailyStartTime;
+        private readonly TimeSpan? _offset;
+
         //The number of data updates between creating new bars.
         private readonly int? _maxCount;
         //The number of pieces of data we've accumulated since our last emit
@@ -44,9 +49,17 @@ namespace QuantConnect.Data.Consolidators
         /// Creates a consolidator to produce a new <typeparamref name="TConsolidated"/> instance representing the period
         /// </summary>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
-        protected PeriodCountConsolidatorBase(TimeSpan period)
+        protected PeriodCountConsolidatorBase(TimeSpan period, TimeSpan? dailyStartTime = null)
         {
             _period = period;
+            _dailyStartTime = dailyStartTime;
+            if (dailyStartTime.HasValue)
+            {
+                var startTime = dailyStartTime.Value;
+                if (startTime.TotalHours > 24.0)
+                    throw new ArgumentOutOfRangeException(nameof(dailyStartTime), "Must be less than a day.");
+                _offset = new TimeSpan(0, 0, startTime.Minutes, startTime.Seconds, startTime.Milliseconds);
+            }
         }
 
         /// <summary>
@@ -129,7 +142,9 @@ namespace QuantConnect.Data.Consolidators
             if (!_lastEmit.HasValue)
             {
                 // initialize this value for period computations
-                _lastEmit = IsTimeBased ? DateTime.MinValue : data.Time;
+                _lastEmit = IsTimeBased ? 
+                    _dailyStartTime.HasValue ? data.Time.Date + _dailyStartTime.Value : DateTime.MinValue 
+                    : data.Time;
             }
 
             if (_period.HasValue)
@@ -175,7 +190,13 @@ namespace QuantConnect.Data.Consolidators
                 }
 
                 OnDataConsolidated(_workingBar);
-                _lastEmit = IsTimeBased && _workingBar != null ? _workingBar.Time.Add(Period ?? TimeSpan.Zero) : data.Time;
+
+                var nextEmit = IsTimeBased && _workingBar != null ? _workingBar.Time.Add(Period ?? TimeSpan.Zero) : data.Time;
+                if (_dailyStartTime.HasValue && _lastEmit.HasValue && _lastEmit.Value.TimeOfDay < _dailyStartTime && nextEmit.TimeOfDay >= _dailyStartTime)
+                    _lastEmit = nextEmit.Date + _dailyStartTime.Value;
+                else
+                    _lastEmit = nextEmit;
+
                 _workingBar = null;
             }
 
@@ -252,7 +273,8 @@ namespace QuantConnect.Data.Consolidators
         protected DateTime GetRoundedBarTime(DateTime time)
         {
             // rounding is performed only in time span mode
-            return _period.HasValue && !_maxCount.HasValue ? time.RoundDown((TimeSpan)_period) : time;
+            return _period.HasValue && !_maxCount.HasValue ?
+                _offset.HasValue ? time.RoundDown((TimeSpan) _period, (TimeSpan) _offset) : time.RoundDown((TimeSpan)_period) : time;
         }
 
         /// <summary>

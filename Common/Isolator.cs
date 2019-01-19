@@ -113,7 +113,7 @@ namespace QuantConnect
                         Log.Error("Execution Security Error: Memory usage over 80% capacity. Sampled at {0}", sample);
                     }
 
-                    Log.Trace("{0} Isolator.ExecuteWithTimeLimit(): Used: {1} Sample: {2} CurrentTimeStepElapsed: {3}",
+                    Log.Trace("{0} Isolator.ExecuteWithTimeLimit(): Used: {1}MB Sample: {2}MB CurrentTimeStepElapsed: {3}",
                         DateTime.Now.ToString("u"),
                         PrettyFormatRam(memoryUsed),
                         PrettyFormatRam((long)sample),

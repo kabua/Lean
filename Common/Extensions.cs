@@ -488,6 +488,27 @@ namespace QuantConnect
         }
 
         /// <summary>
+        /// Extension method to round a datetime down by a timespan interval.
+        /// </summary>
+        /// <param name="dateTime">Base DateTime object we're rounding down.</param>
+        /// <param name="interval">Timespan interval to round to.</param>
+        /// <param name="offset">The offset to add to the rounded value.</param>
+        /// <returns>Rounded datetime</returns>
+        public static DateTime RoundDown(this DateTime dateTime, TimeSpan interval, TimeSpan offset)
+        {
+            if (interval == TimeSpan.Zero)
+            {
+                // divide by zero exception
+                return dateTime;
+            }
+
+            if (offset >= interval)
+                throw new ArgumentOutOfRangeException(nameof(offset), "must be less than interval.");
+
+            return dateTime.AddTicks(-(dateTime.Ticks % interval.Ticks) + offset.Ticks);
+        }
+
+        /// <summary>
         /// Rounds the specified date time in the specified time zone. Careful with calling this method in a loop while modifying dateTime, check unit tests.
         /// </summary>
         /// <param name="dateTime">Date time to be rounded</param>

@@ -415,13 +415,13 @@ namespace QuantConnect.Lean.Engine
                         }
 
                         //Diagnostics Completed, Send Result Packet:
-                        var totalSeconds = (DateTime.Now - startTime).TotalSeconds;
+                        var processingTime = DateTime.Now - startTime;
                         var dataPoints = algorithmManager.DataPoints + algorithm.HistoryProvider.DataPointCount;
 
                         if (!_liveMode)
                         {
-                            var kps = dataPoints / (double) 1000 / totalSeconds;
-                            _algorithmHandlers.Results.DebugMessage($"Algorithm Id:({job.AlgorithmId}) completed in {totalSeconds:F2} seconds at {kps:F0}k data points per second. Processing a total of {dataPoints:N0} data points.");
+                            var kps = dataPoints / (double) 1000 / processingTime.TotalSeconds;
+                            _algorithmHandlers.Results.DebugMessage($"Algorithm Id:({job.AlgorithmId}) completed in {processingTime} at {kps:F0}k data points per second. Processing a total of {dataPoints:N0} data points.");
                         }
 
                         _algorithmHandlers.Results.SendFinalResult(job, orders, algorithm.Transactions.TransactionRecord, holdings, algorithm.Portfolio.CashBook, statisticsResults, banner);

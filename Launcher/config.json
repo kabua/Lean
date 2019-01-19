@@ -6,11 +6,13 @@
     // two predefined environments, 'backtesting' and 'live', feel free
     // to add more!
 
-    "environment": "backtesting-desktop", // "live-paper", "backtesting", "backtesting-desktop", "live-interactive", "live-interactive-iqfeed"
+    //"environment": "backtesting-desktop", // "live-paper", "backtesting", "backtesting-desktop", "live-interactive", "live-interactive-iqfeed"
+    "environment": "backtesting", // "live-paper", "backtesting", "backtesting-desktop", "live-interactive", "live-interactive-iqfeed"
 
     // algorithm class selector
     //"algorithm-type-name": "BasicTemplateFrameworkAlgorithm",
-    "algorithm-type-name": "TwoBarTrendAlgo",
+    //"algorithm-type-name": "TwoBarTrendAlgo",
+    "algorithm-type-name": "PivotStudyAlgo",
 
     // Algorithm language selector - options CSharp, FSharp, VisualBasic, Python, Java
     "algorithm-language": "CSharp",
@@ -138,6 +140,7 @@
         // defines the 'backtesting' environment
         "backtesting": {
             "live-mode": false,
+            "algorithm-manager-time-loop-maximum": 15372286728,
 
             "setup-handler": "QuantConnect.Lean.Engine.Setup.ConsoleSetupHandler",
             "result-handler": "QuantConnect.Lean.Engine.Results.BacktestingResultHandler",

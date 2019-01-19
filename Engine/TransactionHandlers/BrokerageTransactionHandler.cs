@@ -220,7 +220,7 @@ namespace QuantConnect.Lean.Engine.TransactionHandlers
                 ? OrderResponse.Success(request)
                 : OrderResponse.WarmingUp(request);
 
-            request.SetResponse(response);
+            request.SetResponse(response, OrderRequestStatus.Processed);
             var ticket = new OrderTicket(_algorithm.Transactions, request);
 
             Interlocked.Increment(ref _totalOrderCount);
