@@ -171,7 +171,7 @@ namespace QuantConnect.ToolBox.KaikoDataConverter
         /// </summary>
         /// <param name="symbol">The symbol these ticks represent</param>
         /// <param name="resolution">The resolution that should be written</param>
-        /// <param name="tickType">The tpye (Trades/Quotes) </param>
+        /// <param name="tickType">The type (Trades/Quotes) </param>
         /// <param name="bars">The aggregated bars being written to disk</param>
         private static void WriteTradeTicksForResolution(Symbol symbol, Resolution resolution, TickType tickType, List<BaseData> bars)
         {
