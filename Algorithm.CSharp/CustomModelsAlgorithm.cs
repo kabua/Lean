@@ -115,7 +115,7 @@ namespace QuantConnect.Algorithm.CSharp
             }
         }
 
-        public class CustomFeeModel : IFeeModel
+        public class CustomFeeModel : FeeModel
         {
             private readonly QCAlgorithm _algorithm;
 
@@ -124,13 +124,15 @@ namespace QuantConnect.Algorithm.CSharp
                 _algorithm = algorithm;
             }
 
-            public decimal GetOrderFee(Security security, Order order)
+            public override OrderFee GetOrderFee(OrderFeeParameters parameters)
             {
                 // custom fee math
-                var fee = Math.Max(1m, security.Price*order.AbsoluteQuantity*0.00001m);
+                var fee = Math.Max(
+                    1m,
+                    parameters.Security.Price*parameters.Order.AbsoluteQuantity*0.00001m);
 
                 _algorithm.Log("CustomFeeModel: " + fee);
-                return fee;
+                return new OrderFee(new CashAmount(fee, "USD"));
             }
         }
 
@@ -161,7 +163,7 @@ namespace QuantConnect.Algorithm.CSharp
         /// <summary>
         /// This is used by the regression test system to indicate which languages this algorithm is written in.
         /// </summary>
-        public Language[] Languages { get; } = { Language.CSharp };
+        public Language[] Languages { get; } = { Language.CSharp, Language.Python };
 
         /// <summary>
         /// This is used by the regression test system to indicate what the expected statistics are from running the algorithm

@@ -14,18 +14,17 @@
 */
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using QuantConnect.Data.Market;
 using QuantConnect.Logging;
 using QuantConnect.Orders;
 using RestSharp;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using QuantConnect.Orders.Fees;
 
 namespace QuantConnect.Brokerages.Bitfinex
 {
@@ -95,19 +94,6 @@ namespace QuantConnect.Brokerages.Bitfinex
         {
             return wallet => wallet.Type.Equals("exchange") && accountType == AccountType.Cash ||
                 wallet.Type.Equals("trading") && accountType == AccountType.Margin;
-        }
-
-        private decimal GetConversionRate(Symbol symbol)
-        {
-            try
-            {
-                return _priceProvider.GetLastPrice(symbol);
-            }
-            catch (Exception e)
-            {
-                OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Error, 0, $"GetConversionRate: {e.Message}"));
-                return 0;
-            }
         }
 
         /// <summary>
@@ -215,16 +201,28 @@ namespace QuantConnect.Brokerages.Bitfinex
 
         private Holding ConvertHolding(Messages.Position position)
         {
-            return new Holding()
+            var holding = new Holding
             {
                 Symbol = _symbolMapper.GetLeanSymbol(position.Symbol),
                 AveragePrice = position.AveragePrice,
                 Quantity = position.Amount,
                 UnrealizedPnL = position.PL,
-                ConversionRate = 1.0m,
                 CurrencySymbol = "$",
                 Type = SecurityType.Crypto
             };
+
+            try
+            {
+                var tick = GetTick(holding.Symbol);
+                holding.MarketPrice = tick.Value;
+            }
+            catch (Exception)
+            {
+                Log.Error($"BitfinexBrokerage.ConvertHolding(): failed to set {holding.Symbol} market price");
+                throw;
+            }
+
+            return holding;
         }
 
         private Func<Messages.Order, bool> OrderFilter(AccountType accountType)
@@ -303,7 +301,7 @@ namespace QuantConnect.Brokerages.Bitfinex
             SignRequest(request, payload.ToString());
 
             var response = ExecuteRestRequest(request);
-
+            var orderFee = OrderFee.Zero;
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 var raw = JsonConvert.DeserializeObject<Messages.Order>(response.Content);
@@ -311,7 +309,7 @@ namespace QuantConnect.Brokerages.Bitfinex
                 if (string.IsNullOrEmpty(raw?.Id))
                 {
                     var errorMessage = $"Error parsing response from place order: {response.Content}";
-                    OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Bitfinex Order Event") { Status = OrderStatus.Invalid, Message = errorMessage });
+                    OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee, "Bitfinex Order Event") { Status = OrderStatus.Invalid, Message = errorMessage });
                     OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Warning, (int)response.StatusCode, errorMessage));
 
                     UnlockStream();
@@ -331,7 +329,7 @@ namespace QuantConnect.Brokerages.Bitfinex
                 }
 
                 // Generate submitted event
-                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Bitfinex Order Event") { Status = OrderStatus.Submitted });
+                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee, "Bitfinex Order Event") { Status = OrderStatus.Submitted });
                 Log.Trace($"Order submitted successfully - OrderId: {order.Id}");
 
                 UnlockStream();
@@ -339,7 +337,7 @@ namespace QuantConnect.Brokerages.Bitfinex
             }
 
             var message = $"Order failed, Order Id: {order.Id} timestamp: {order.Time} quantity: {order.Quantity} content: {response.Content}";
-            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Bitfinex Order Event") { Status = OrderStatus.Invalid });
+            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee, "Bitfinex Order Event") { Status = OrderStatus.Invalid });
             OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Warning, -1, message));
 
             UnlockStream();

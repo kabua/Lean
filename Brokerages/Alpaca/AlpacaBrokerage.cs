@@ -24,6 +24,7 @@ using QuantConnect.Data.Market;
 using QuantConnect.Interfaces;
 using QuantConnect.Logging;
 using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
 using QuantConnect.Securities;
 using QuantConnect.Util;
 using HistoryRequest = QuantConnect.Data.HistoryRequest;
@@ -231,18 +232,17 @@ namespace QuantConnect.Brokerages.Alpaca
         /// Gets the current cash balance for each currency held in the brokerage account
         /// </summary>
         /// <returns>The current cash balance for each currency available for trading</returns>
-        public override List<Cash> GetCashBalance()
+        public override List<CashAmount> GetCashBalance()
         {
             CheckRateLimiting();
 
             var task = _restClient.GetAccountAsync();
             var balance = task.SynchronouslyAwaitTaskResult();
 
-            return new List<Cash>
+            return new List<CashAmount>
             {
-                new Cash("USD",
-                    balance.TradableCash,
-                    1m)
+                new CashAmount(balance.TradableCash,
+                    Currencies.USD)
             };
         }
 
@@ -257,28 +257,7 @@ namespace QuantConnect.Brokerages.Alpaca
             var task = _restClient.ListPositionsAsync();
             var holdings = task.SynchronouslyAwaitTaskResult();
 
-            var qcHoldings = holdings.Select(ConvertHolding).ToList();
-
-            // Set MarketPrice in each Holding
-            var alpacaSymbols = qcHoldings
-                .Select(x => x.Symbol.Value)
-                .ToList();
-
-            if (alpacaSymbols.Count > 0)
-            {
-                var quotes = GetRates(alpacaSymbols);
-                foreach (var holding in qcHoldings)
-                {
-                    var alpacaSymbol = holding.Symbol;
-                    Tick tick;
-                    if (quotes.TryGetValue(alpacaSymbol.Value, out tick))
-                    {
-                        holding.MarketPrice = (tick.BidPrice + tick.AskPrice) / 2;
-                    }
-                }
-            }
-
-            return qcHoldings;
+            return holdings.Select(ConvertHolding).ToList();
         }
 
         /// <summary>
@@ -303,8 +282,8 @@ namespace QuantConnect.Brokerages.Alpaca
         /// <returns>True if the request for a new order has been placed, false otherwise</returns>
         public override bool PlaceOrder(Order order)
         {
-            const int orderFee = 0;
-            order.PriceCurrency = "USD";
+            var orderFee = OrderFee.Zero;
+            order.PriceCurrency = Currencies.USD;
 
             try
             {
@@ -319,7 +298,7 @@ namespace QuantConnect.Brokerages.Alpaca
                 var errorMessage = $"Error placing order: {e.Message}";
 
                 OnOrderEvent(
-                    new OrderEvent(order, DateTime.UtcNow, 0, "Alpaca Order Event")
+                    new OrderEvent(order, DateTime.UtcNow, orderFee, "Alpaca Order Event")
                     {
                         Status = Orders.OrderStatus.Invalid,
                         Message = errorMessage
@@ -329,7 +308,8 @@ namespace QuantConnect.Brokerages.Alpaca
                 return true;
             }
 
-            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee) { Status = Orders.OrderStatus.Submitted });
+            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee)
+                { Status = Orders.OrderStatus.Submitted });
 
             return true;
         }
@@ -402,15 +382,5 @@ namespace QuantConnect.Brokerages.Alpaca
         }
 
         #endregion
-
-        /// <summary>
-        /// Retrieves the current quotes for an instrument
-        /// </summary>
-        /// <param name="instrument">the instrument to check</param>
-        /// <returns>Returns a Tick object with the current bid/ask prices for the instrument</returns>
-        public Tick GetRates(string instrument)
-        {
-            return GetRates(new List<string> { instrument }).Values.First();
-        }
     }
 }

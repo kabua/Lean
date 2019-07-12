@@ -86,7 +86,7 @@ namespace QuantConnect.Tests.Algorithm
         }
 
         [Test]
-        public void RegistersIndicatorProperlyPython()
+        public void PlotAndRegistersIndicatorProperlyPython()
         {
             var expected = 0;
             PyObject indicator;
@@ -111,6 +111,7 @@ namespace QuantConnect.Tests.Algorithm
                     throw new NotSupportedException($"RegistersIndicatorProperlyPython(): Unsupported indicator data type: {indicatorTest.GetType()}");
                 }
                 Assert.DoesNotThrow(() => _algorithm.RegisterIndicator(_spy, indicator, Resolution.Minute));
+                Assert.DoesNotThrow(() => _algorithm.Plot(_spy.Value, indicator));
                 expected++;
 
                 var actual = _algorithm.SubscriptionManager.Subscriptions.FirstOrDefault().Consolidators.Count;
@@ -169,7 +170,7 @@ marketHoursDatabase = MarketHoursDatabase.FromDataFolder()
 symbolPropertiesDatabase = SymbolPropertiesDatabase.FromDataFolder()
 securityService =  SecurityService(algo.Portfolio.CashBook, marketHoursDatabase, symbolPropertiesDatabase, algo)
 algo.Securities.SetSecurityService(securityService)
-dataManager = DataManager(None, UniverseSelection(algo, securityService), algo, algo.TimeKeeper, marketHoursDatabase)
+dataManager = DataManager(None, UniverseSelection(algo, securityService), algo, algo.TimeKeeper, marketHoursDatabase, False)
 algo.SubscriptionManager.SetDataManager(dataManager)
 
 

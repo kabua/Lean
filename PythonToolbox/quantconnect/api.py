@@ -13,9 +13,11 @@
 
 from datetime import datetime
 from json import dumps
-from requests import Request
+from requests import get as requests_get, Request
 from time import mktime
 from quantconnect import ApiConnection
+
+DOWNLOAD_CHUNK_SIZE = 256 * 1024
 
 class Api:
     """QuantConnect.com Interaction Via API.
@@ -350,9 +352,8 @@ class Api:
     def read_live_algorithm(self, projectId, deployId):
         """Get a list of live running algorithms for user.
         Args:
-            status(str): Filter the statuses of the algorithms returned from the api
-            startTime(datetime): Earliest launched time of the algorithms returned by the Api
-            endTime(datetime): Latest launched time of the algorithms returned by the Api
+            projectId(int): Project Id of the live running algorithm
+            deployId: Unique live algorithm deployment identifier
         Returns:
             Live list
         """
@@ -412,10 +413,11 @@ class Api:
     def read_data_link(self, symbol, securityType, market, resolution, date):
         """Gets the link to the downloadable data.
         Args:
-            symbol(str): Symbol of security of which data will be requested.
-            algorithmId(str): Algorithm Id of the live running algorithm
-            startTime(datetime): No logs will be returned before this time
-            endTime(datetime): No logs will be returned after this time
+            symbol(str): Symbol of security of which data will be requested
+            securityType(str): Type of underlying asset
+            market(str): e.g. CBOE, CBOT, FXCM, GDAX etc. 
+            resolution(str): Resolution of data requested
+            date: Date of the data requested
         Returns:
             List of strings that represent the logs of the algorithm
         """
@@ -453,10 +455,10 @@ class Api:
         """Method to download and save the data purchased through QuantConnect
         Args:
             symbol(str): Symbol of security of which data will be requested.
+            securityType(str): Type of underlying asset
+            market(str): e.g. CBOE, CBOT, FXCM, GDAX etc. 
             resolution(str): Resolution of data requested.
             date(datetime): Date of the data requested.
-            endTime(datetime): No logs will be returned after this time
-            path(url): path of data request
             fileName(str): file name of data download
         Returns:
             bool indicating whether the data was successfully downloaded or not
@@ -468,8 +470,9 @@ class Api:
         # Make sure the link was successfully retrieved
         if link['success']:
             # download and save the data
-            request = requests.get(link['link'])
+            request = requests_get(link['link'], stream=True)
             with open(fileName + '.zip', "wb") as code:
-                code.write(request.content)
+                for chunk in request.iter_content(DOWNLOAD_CHUNK_SIZE):
+                    code.write(chunk)
 
         return link['success']

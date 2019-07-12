@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using QuantConnect.Packets;
 
 namespace QuantConnect.Jupyter
 {
@@ -66,6 +67,13 @@ namespace QuantConnect.Jupyter
                 // Initialize History Provider
                 var composer = new Composer();
                 var algorithmHandlers = LeanEngineAlgorithmHandlers.FromConfiguration(composer);
+                var systemHandlers = LeanEngineSystemHandlers.FromConfiguration(composer);
+                systemHandlers.LeanManager.Initialize(systemHandlers,
+                    algorithmHandlers,
+                    new BacktestNodePacket(),
+                    new AlgorithmManager(false));
+                systemHandlers.LeanManager.SetAlgorithm(this);
+
                 _dataCacheProvider = new ZipDataCacheProvider(algorithmHandlers.DataProvider);
 
                 var symbolPropertiesDataBase = SymbolPropertiesDatabase.FromDataFolder();
@@ -76,7 +84,8 @@ namespace QuantConnect.Jupyter
                         new UniverseSelection(this, securityService),
                         this,
                         TimeKeeper,
-                        MarketHoursDatabase));
+                        MarketHoursDatabase,
+                        false));
 
                 var mapFileProvider = algorithmHandlers.MapFileProvider;
                 HistoryProvider = composer.GetExportedValueByTypeName<IHistoryProvider>(Config.Get("history-provider", "SubscriptionDataReaderHistoryProvider"));
@@ -175,7 +184,10 @@ namespace QuantConnect.Jupyter
             }
 
             var option = Securities[symbol] as Option;
-            var underlying = AddEquity(symbol.Underlying.Value, option.Resolution);
+            var resolutionToUseForUnderlying = resolution ?? SubscriptionManager.SubscriptionDataConfigService
+                .GetSubscriptionDataConfigs(symbol)
+                .GetHighestResolution();
+            var underlying = AddEquity(symbol.Underlying.Value, resolutionToUseForUnderlying);
 
             var allSymbols = new List<Symbol>();
             for (var date = start; date < end; date = date.AddDays(1))

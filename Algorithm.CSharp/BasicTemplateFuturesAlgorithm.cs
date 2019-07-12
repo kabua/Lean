@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using QuantConnect.Data;
 using QuantConnect.Interfaces;
-using QuantConnect.Orders;
 using QuantConnect.Securities;
 
 namespace QuantConnect.Algorithm.CSharp
@@ -93,16 +92,6 @@ namespace QuantConnect.Algorithm.CSharp
         }
 
         /// <summary>
-        /// Order fill event handler. On an order fill update the resulting information is passed to this method.
-        /// </summary>
-        /// <param name="orderEvent">Order event details containing details of the events</param>
-        /// <remarks>This method can be called asynchronously and so should only be used by seasoned C# experts. Ensure you use proper locks on thread-unsafe objects</remarks>
-        public override void OnOrderEvent(OrderEvent orderEvent)
-        {
-            Log(orderEvent.ToString());
-        }
-
-        /// <summary>
         /// This is used by the regression test system to indicate if the open source Lean repository has the required data to run this algorithm.
         /// </summary>
         public bool CanRunLocally { get; } = true;
@@ -135,7 +124,8 @@ namespace QuantConnect.Algorithm.CSharp
             {"Information Ratio", "-24.985"},
             {"Tracking Error", "0.414"},
             {"Treynor Ratio", "10.413"},
-            {"Total Fees", "$15207.00"}
+            {"Total Fees", "$15207.00"},
+            {"Fitness Score", "0.033"}
         };
     }
 }

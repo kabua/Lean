@@ -42,12 +42,12 @@ namespace QuantConnect.Data.Market
         /// <summary>
         /// Size of bid quote.
         /// </summary>
-        public decimal BidSize = 0;
+        public decimal BidSize { get; set; } = 0;
 
         /// <summary>
         /// Size of ask quote.
         /// </summary>
-        public decimal AskSize = 0;
+        public decimal AskSize { get; set; } = 0;
 
         /// <summary>
         /// Bid OHLC
@@ -231,10 +231,8 @@ namespace QuantConnect.Data.Market
             Time = time;
             Bid = bid == null ? null : new Bar(bid.Open, bid.High, bid.Low, bid.Close);
             Ask = ask == null ? null : new Bar(ask.Open, ask.High, ask.Low, ask.Close);
-            if (Bid != null)
-                BidSize = LastBidSize = lastBidSize;
-            if (Ask != null)
-                AskSize = LastAskSize = lastAskSize;
+            if (Bid != null) LastBidSize = lastBidSize;
+            if (Ask != null) LastAskSize = lastAskSize;
             Value = Close;
             Period = period ?? TimeSpan.FromMinutes(1);
             DataType = MarketDataType.QuoteBar;
@@ -252,35 +250,26 @@ namespace QuantConnect.Data.Market
         public override void Update(decimal lastTrade, decimal bidPrice, decimal askPrice, decimal volume, decimal bidSize, decimal askSize)
         {
             // update our bid and ask bars - handle null values, this is to give good values for midpoint OHLC
-            if (Bid == null && bidPrice != 0)
-                Bid = new Bar();
-            Bid?.Update(bidPrice);
+            if (Bid == null && bidPrice != 0) Bid = new Bar();
+            if (Bid != null) Bid.Update(bidPrice);
 
-            if (Ask == null && askPrice != 0)
-                Ask = new Bar();
-            Ask?.Update(askPrice);
+            if (Ask == null && askPrice != 0) Ask = new Bar();
+            if (Ask != null) Ask.Update(askPrice);
 
             if (bidSize > 0)
             {
                 LastBidSize = bidSize;
-                if (!IsFillForward)
-                    BidSize += bidSize;
             }
 
             if (askSize > 0)
             {
                 LastAskSize = askSize;
-                if (!IsFillForward)
-                    AskSize += askSize;
             }
 
             // be prepared for updates without trades
-            if (lastTrade != 0)
-                Value = lastTrade;
-            else if (askPrice != 0)
-                Value = askPrice;
-            else if (bidPrice != 0)
-                Value = bidPrice;
+            if (lastTrade != 0) Value = lastTrade;
+            else if (askPrice != 0) Value = askPrice;
+            else if (bidPrice != 0) Value = bidPrice;
         }
 
         /// <summary>
@@ -293,16 +282,10 @@ namespace QuantConnect.Data.Market
         /// <returns>Enumerable iterator for returning each line of the required data.</returns>
         public override BaseData Reader(SubscriptionDataConfig config, string line, DateTime date, bool isLiveMode)
         {
-            var csvLength = line.Split(',').Length;
-
             try
             {
-                // "Scaffold" code - simple check to see how the data is formatted and decide how to parse appropriately
-                // TODO: Once all FX is reprocessed to QuoteBars, remove this check
-                if (csvLength > 5)
+                switch (config.SecurityType)
                 {
-                    switch (config.SecurityType)
-                    {
                     case SecurityType.Equity:
                         return ParseEquity(config, line, date);
 
@@ -319,11 +302,7 @@ namespace QuantConnect.Data.Market
                     case SecurityType.Future:
                         return ParseFuture(config, line, date);
 
-                    }
                 }
-
-                // Parse as trade
-                return ParseTradeAsQuoteBar(config, date, line);
             }
             catch (Exception err)
             {
@@ -486,7 +465,7 @@ namespace QuantConnect.Data.Market
             else
             {
                 // Using custom "ToDecimal" conversion for speed on high resolution data.
-                quoteBar.Time = date.Date.AddMilliseconds((double) csv[0].ToDecimal()).ConvertTo(config.DataTimeZone, config.ExchangeTimeZone);
+                quoteBar.Time = date.Date.AddMilliseconds((double)csv[0].ToDecimal()).ConvertTo(config.DataTimeZone, config.ExchangeTimeZone);
             }
 
             // only create the bid if it exists in the file
@@ -494,10 +473,10 @@ namespace QuantConnect.Data.Market
             {
                 quoteBar.Bid = new Bar
                 {
-                    Open = config.GetNormalizedPrice(csv[1].ToDecimal() * scaleFactor),
-                    High = config.GetNormalizedPrice(csv[2].ToDecimal() * scaleFactor),
-                    Low = config.GetNormalizedPrice(csv[3].ToDecimal() * scaleFactor),
-                    Close = config.GetNormalizedPrice(csv[4].ToDecimal() * scaleFactor)
+                    Open = csv[1].ToDecimal() * scaleFactor,
+                    High = csv[2].ToDecimal() * scaleFactor,
+                    Low = csv[3].ToDecimal() * scaleFactor,
+                    Close = csv[4].ToDecimal() * scaleFactor
                 };
                 quoteBar.LastBidSize = csv[5].ToDecimal();
             }
@@ -511,10 +490,10 @@ namespace QuantConnect.Data.Market
             {
                 quoteBar.Ask = new Bar
                 {
-                    Open = config.GetNormalizedPrice(csv[6].ToDecimal() * scaleFactor),
-                    High = config.GetNormalizedPrice(csv[7].ToDecimal() * scaleFactor),
-                    Low = config.GetNormalizedPrice(csv[8].ToDecimal() * scaleFactor),
-                    Close = config.GetNormalizedPrice(csv[9].ToDecimal() * scaleFactor)
+                    Open = csv[6].ToDecimal() * scaleFactor,
+                    High = csv[7].ToDecimal() * scaleFactor,
+                    Low = csv[8].ToDecimal() * scaleFactor,
+                    Close = csv[9].ToDecimal() * scaleFactor
                 };
                 quoteBar.LastAskSize = csv[10].ToDecimal();
             }
@@ -560,10 +539,8 @@ namespace QuantConnect.Data.Market
         {
             return new QuoteBar
             {
-                Ask = Ask?.Clone(),
-                Bid = Bid?.Clone(),
-                AskSize = AskSize,
-                BidSize = BidSize,
+                Ask = Ask == null ? null : Ask.Clone(),
+                Bid = Bid == null ? null : Bid.Clone(),
                 LastAskSize = LastAskSize,
                 LastBidSize = LastBidSize,
                 Symbol = Symbol,

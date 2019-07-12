@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
 
 namespace QuantConnect.Securities
 {
@@ -126,8 +127,13 @@ namespace QuantConnect.Securities
             var orderFee = 0m;
             if (parameters.Order.Type == OrderType.Limit)
             {
-                orderFee = parameters.Security.FeeModel.GetOrderFee(parameters.Security, parameters.Order);
-                orderFee = parameters.Portfolio.CashBook.Convert(orderFee, CashBook.AccountCurrency, parameters.Security.QuoteCurrency.Symbol);
+                var fee = parameters.Security.FeeModel.GetOrderFee(
+                    new OrderFeeParameters(parameters.Security,
+                        parameters.Order)).Value;
+                orderFee = parameters.Portfolio.CashBook.Convert(
+                        fee.Amount,
+                        fee.Currency,
+                        parameters.Security.QuoteCurrency.Symbol);
             }
 
             isSufficient = orderQuantity <= totalQuantity - openOrdersReservedQuantity - orderFee;
@@ -187,7 +193,9 @@ namespace QuantConnect.Securities
             {
                 if (parameters.Security.QuoteCurrency.ConversionRate == 0)
                 {
-                    return new GetMaximumOrderQuantityForTargetValueResult(0, $"The internal cash feed required for converting {parameters.Security.QuoteCurrency.Symbol} to {CashBook.AccountCurrency} does not have any data yet (or market may be closed).");
+                    return new GetMaximumOrderQuantityForTargetValueResult(0, "The internal cash feed required for converting" +
+                        $" {parameters.Security.QuoteCurrency.Symbol} to {parameters.Portfolio.CashBook.AccountCurrency} does not" +
+                        " have any data yet (or market may be closed).");
                 }
 
                 if (parameters.Security.SymbolProperties.ContractMultiplier == 0)
@@ -222,6 +230,7 @@ namespace QuantConnect.Securities
 
             // Just in case...
             var lastOrderQuantity = 0m;
+            var utcTime = parameters.Security.LocalTime.ConvertToUtc(parameters.Security.Exchange.TimeZone);
             do
             {
                 // Each loop will reduce the order quantity based on the difference between
@@ -255,9 +264,14 @@ namespace QuantConnect.Securities
                 lastOrderQuantity = orderQuantity;
 
                 // generate the order
-                var order = new MarketOrder(parameters.Security.Symbol, orderQuantity, DateTime.UtcNow);
+                var order = new MarketOrder(parameters.Security.Symbol, orderQuantity, utcTime);
                 var orderValue = orderQuantity * unitPrice;
-                orderFees = parameters.Security.FeeModel.GetOrderFee(parameters.Security, order);
+
+                var fees = parameters.Security.FeeModel.GetOrderFee(
+                    new OrderFeeParameters(parameters.Security,
+                        order)).Value;
+                orderFees = parameters.Portfolio.CashBook.ConvertToAccountCurrency(fees).Amount;
+
                 currentOrderValue = orderValue + orderFees;
             } while (currentOrderValue > targetOrderValue);
 
@@ -297,7 +311,8 @@ namespace QuantConnect.Securities
             var quoteCurrencyPosition = portfolio.CashBook[security.QuoteCurrency.Symbol].Amount;
 
             // determine the unit price in terms of the quote currency
-            var unitPrice = new MarketOrder(security.Symbol, 1, DateTime.UtcNow).GetValue(security) / security.QuoteCurrency.ConversionRate;
+            var utcTime = parameters.Security.LocalTime.ConvertToUtc(parameters.Security.Exchange.TimeZone);
+            var unitPrice = new MarketOrder(security.Symbol, 1, utcTime).GetValue(security) / security.QuoteCurrency.ConversionRate;
             if (unitPrice == 0)
             {
                 return parameters.ResultInAccountCurrency(0m);

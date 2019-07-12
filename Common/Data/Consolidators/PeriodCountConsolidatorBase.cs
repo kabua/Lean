@@ -29,15 +29,11 @@ namespace QuantConnect.Data.Consolidators
         where T : IBaseData
         where TConsolidated : BaseData
     {
-        //The minimum timespan between creating new bars.
-        private readonly TimeSpan? _period;
-
-        //The offset the timespan represents
-        private readonly TimeSpan? _dailyStartTime;
-        private readonly TimeSpan? _offset;
-
         //The number of data updates between creating new bars.
         private readonly int? _maxCount;
+        //
+        private readonly IPeriodSpecification _periodSpecification;
+
         //The number of pieces of data we've accumulated since our last emit
         private int _currentCount;
         //The working bar used for aggregating the data
@@ -45,21 +41,22 @@ namespace QuantConnect.Data.Consolidators
         //The last time we emitted a consolidated bar
         private DateTime? _lastEmit;
 
+        private PeriodCountConsolidatorBase(IPeriodSpecification periodSpecification)
+        {
+            _periodSpecification = periodSpecification;
+        }
+
         /// <summary>
         /// Creates a consolidator to produce a new <typeparamref name="TConsolidated"/> instance representing the period
         /// </summary>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
-        protected PeriodCountConsolidatorBase(TimeSpan period, TimeSpan? dailyStartTime = null)
+        /// <param name="firstBarStartTime">Specify the day's starting time</param>
+        protected PeriodCountConsolidatorBase(TimeSpan period, TimeSpan? firstBarStartTime = null)
+            : this(firstBarStartTime == null ?
+                (IPeriodSpecification) new TimeSpanPeriodSpecification(period) :
+                new FirstBarTimeSpanPeriodSpecification(period, firstBarStartTime.Value))
         {
-            _period = period;
-            _dailyStartTime = dailyStartTime;
-            if (dailyStartTime.HasValue)
-            {
-                var startTime = dailyStartTime.Value;
-                if (startTime.TotalHours > 24.0)
-                    throw new ArgumentOutOfRangeException(nameof(dailyStartTime), "Must be less than a day.");
-                _offset = new TimeSpan(0, 0, startTime.Minutes, startTime.Seconds, startTime.Milliseconds);
-            }
+            Period = _periodSpecification.Period;
         }
 
         /// <summary>
@@ -67,6 +64,7 @@ namespace QuantConnect.Data.Consolidators
         /// </summary>
         /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         protected PeriodCountConsolidatorBase(int maxCount)
+            : this(new BarCountPeriodSpecification())
         {
             _maxCount = maxCount;
         }
@@ -77,26 +75,31 @@ namespace QuantConnect.Data.Consolidators
         /// <param name="maxCount">The number of pieces to accept before emitting a consolidated bar</param>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
         protected PeriodCountConsolidatorBase(int maxCount, TimeSpan period)
+            : this(new MixedModePeriodSpecification(period))
         {
             _maxCount = maxCount;
-            _period = period;
+            Period = _periodSpecification.Period;
+        }
+
+        /// <summary>
+        /// Creates a consolidator to produce a new <typeparamref name="TConsolidated"/> instance representing the last count pieces of data or the period, whichever comes first
+        /// </summary>
+        /// <param name="func">Func that defines the start time of a consolidated data</param>
+        protected PeriodCountConsolidatorBase(Func<DateTime, CalendarInfo> func)
+            : this(new FuncPeriodSpecification(func))
+        {
+            Period = Time.OneSecond;
         }
 
         /// <summary>
         /// Gets the type produced by this consolidator
         /// </summary>
-        public override Type OutputType
-        {
-            get { return typeof(TConsolidated); }
-        }
+        public override Type OutputType => typeof(TConsolidated);
 
         /// <summary>
         /// Gets a clone of the data being currently consolidated
         /// </summary>
-        public override IBaseData WorkingData
-        {
-            get { return _workingBar != null ? _workingBar.Clone() : null; }
-        }
+        public override IBaseData WorkingData => _workingBar?.Clone();
 
         /// <summary>
         /// Event handler that fires when a new piece of data is produced. We define this as a 'new'
@@ -142,21 +145,22 @@ namespace QuantConnect.Data.Consolidators
             if (!_lastEmit.HasValue)
             {
                 // initialize this value for period computations
-                _lastEmit = IsTimeBased ? 
-                    _dailyStartTime.HasValue ? data.Time.Date + _dailyStartTime.Value : DateTime.MinValue 
+                _lastEmit = IsTimeBased ?
+                    _periodSpecification.FirstBarStartTime.HasValue ? 
+                        data.Time.Date + _periodSpecification.FirstBarStartTime.Value : DateTime.MinValue
                     : data.Time;
             }
 
-            if (_period.HasValue)
+            if (Period.HasValue)
             {
                 // we're in time span mode and initialized
-                if (_workingBar != null && data.Time - _workingBar.Time >= _period.Value && GetRoundedBarTime(data.Time) > _lastEmit)
+                if (_workingBar != null && data.Time - _workingBar.Time >= Period.Value && GetRoundedBarTime(data.Time) > _lastEmit)
                 {
                     fireDataConsolidated = true;
                 }
 
                 // special case: always aggregate before event trigger when TimeSpan is zero
-                if (_period.Value == TimeSpan.Zero)
+                if (Period.Value == TimeSpan.Zero)
                 {
                     fireDataConsolidated = true;
                     aggregateBeforeFire = true;
@@ -178,9 +182,9 @@ namespace QuantConnect.Data.Consolidators
                 if (workingTradeBar != null)
                 {
                     // we kind of are cheating here...
-                    if (_period.HasValue)
+                    if (Period.HasValue)
                     {
-                        workingTradeBar.Period = _period.Value;
+                        workingTradeBar.Period = Period.Value;
                     }
                     // since trade bar has period it aggregates this properly
                     else if (!(data is TradeBar))
@@ -192,10 +196,16 @@ namespace QuantConnect.Data.Consolidators
                 OnDataConsolidated(_workingBar);
 
                 var nextEmit = IsTimeBased && _workingBar != null ? _workingBar.Time.Add(Period ?? TimeSpan.Zero) : data.Time;
-                if (_dailyStartTime.HasValue && _lastEmit.HasValue && _lastEmit.Value.TimeOfDay < _dailyStartTime && nextEmit.TimeOfDay >= _dailyStartTime)
-                    _lastEmit = nextEmit.Date + _dailyStartTime.Value;
+                if (_periodSpecification.FirstBarStartTime.HasValue && _lastEmit.HasValue && 
+                    _lastEmit.Value.TimeOfDay < _periodSpecification.FirstBarStartTime.Value &&
+                    nextEmit.TimeOfDay >= _periodSpecification.FirstBarStartTime.Value)
+                {
+                    _lastEmit = nextEmit.Date + _periodSpecification.FirstBarStartTime.Value;
+                }
                 else
+                {
                     _lastEmit = nextEmit;
+                }
 
                 _workingBar = null;
             }
@@ -215,18 +225,15 @@ namespace QuantConnect.Data.Consolidators
         /// <param name="currentLocalTime">The current time in the local time zone (same as <see cref="BaseData.Time"/>)</param>
         public override void Scan(DateTime currentLocalTime)
         {
-            if (_period.HasValue)
+            if (Period.HasValue && _workingBar != null)
             {
-                if (_workingBar != null)
-                {
-                    currentLocalTime = GetRoundedBarTime(currentLocalTime);
+                currentLocalTime = GetRoundedBarTime(currentLocalTime);
 
-                    if (_period.Value != TimeSpan.Zero && currentLocalTime - _workingBar.Time >= _period.Value && currentLocalTime > _lastEmit)
-                    {
-                        OnDataConsolidated(_workingBar);
-                        _lastEmit = currentLocalTime;
-                        _workingBar = null;
-                    }
+                if (Period.Value != TimeSpan.Zero && currentLocalTime - _workingBar.Time >= Period.Value && currentLocalTime > _lastEmit)
+                {
+                    OnDataConsolidated(_workingBar);
+                    _lastEmit = currentLocalTime;
+                    _workingBar = null;
                 }
             }
         }
@@ -234,28 +241,19 @@ namespace QuantConnect.Data.Consolidators
         /// <summary>
         /// Returns true if this consolidator is time-based, false otherwise
         /// </summary>
-        protected bool IsTimeBased
-        {
-            get { return !_maxCount.HasValue; }
-        }
+        protected bool IsTimeBased => !_maxCount.HasValue;
 
         /// <summary>
         /// Gets the time period for this consolidator
         /// </summary>
-        protected TimeSpan? Period
-        {
-            get { return _period; }
-        }
+        protected TimeSpan? Period { get; private set; }
 
         /// <summary>
-        /// Determines whether or not the specified data should be processd
+        /// Determines whether or not the specified data should be process
         /// </summary>
         /// <param name="data">The data to check</param>
         /// <returns>True if the consolidator should process this data, false otherwise</returns>
-        protected virtual bool ShouldProcess(T data)
-        {
-            return true;
-        }
+        protected virtual bool ShouldProcess(T data) => true;
 
         /// <summary>
         /// Aggregates the new 'data' into the 'workingBar'. The 'workingBar' will be
@@ -272,9 +270,15 @@ namespace QuantConnect.Data.Consolidators
         /// <returns>The rounded bar time</returns>
         protected DateTime GetRoundedBarTime(DateTime time)
         {
-            // rounding is performed only in time span mode
-            return _period.HasValue && !_maxCount.HasValue ?
-                _offset.HasValue ? time.RoundDown((TimeSpan) _period, (TimeSpan) _offset) : time.RoundDown((TimeSpan)_period) : time;
+            var barTime = _periodSpecification.GetRoundedBarTime(time);
+
+            // In the case of a new bar, define the period defined at opening time
+            if (_workingBar == null)
+            {
+                Period = _periodSpecification.Period;
+            }
+
+            return barTime;
         }
 
         /// <summary>
@@ -284,8 +288,123 @@ namespace QuantConnect.Data.Consolidators
         protected virtual void OnDataConsolidated(TConsolidated e)
         {
             base.OnDataConsolidated(e);
-            var handler = DataConsolidated;
-            if (handler != null) handler(this, e);
+            DataConsolidated?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Distinguishes between the different ways a consolidated data start time can be specified
+        /// </summary>
+        private interface IPeriodSpecification
+        {
+            /// <summary>
+            /// Get time the defines the first bar.
+            /// </summary>
+            TimeSpan? FirstBarStartTime { get; }
+
+            /// <summary>
+            /// Get the minimum span of time before emitting a consolidated bar
+            /// </summary>
+            TimeSpan? Period { get; }
+
+            DateTime GetRoundedBarTime(DateTime time);
+        }
+
+        /// <summary>
+        /// User defined the bars period using a counter
+        /// </summary>
+        private class BarCountPeriodSpecification : IPeriodSpecification
+        {
+            public TimeSpan? FirstBarStartTime { get; } = null;
+            public TimeSpan? Period { get; } = null;
+
+            public DateTime GetRoundedBarTime(DateTime time) => time;
+        }
+
+        /// <summary>
+        /// User defined the bars period using a counter and a period (mixed mode)
+        /// </summary>
+        private class MixedModePeriodSpecification : IPeriodSpecification
+        {
+            public TimeSpan? FirstBarStartTime { get; } = null;
+            public TimeSpan? Period { get; }
+
+            public MixedModePeriodSpecification(TimeSpan period)
+            {
+                Period = period;
+            }
+
+            public DateTime GetRoundedBarTime(DateTime time) => time;
+        }
+
+        /// <summary>
+        /// User defined the bars period using a time span
+        /// </summary>
+        private class TimeSpanPeriodSpecification : IPeriodSpecification
+        {
+            public TimeSpan? FirstBarStartTime { get; } = null;
+            public TimeSpan? Period { get; }
+
+            public TimeSpanPeriodSpecification(TimeSpan period)
+            {
+                Period = period;
+            }
+
+            // ReSharper disable once PossibleInvalidOperationException
+            public DateTime GetRoundedBarTime(DateTime time) => time.RoundDown(Period.Value);
+        }
+
+        /// <summary>
+        /// User defined the bars period using a time span
+        /// </summary>
+        private class FirstBarTimeSpanPeriodSpecification : IPeriodSpecification
+        {
+            public TimeSpan? FirstBarStartTime { get; }
+            public TimeSpan? Period { get; }
+
+            public FirstBarTimeSpanPeriodSpecification(TimeSpan period, TimeSpan firstBarStartTime)
+            {
+                FirstBarStartTime = firstBarStartTime;
+                Period = period;
+
+                if (firstBarStartTime.TotalHours > 24.0)
+                    throw new ArgumentOutOfRangeException(nameof(firstBarStartTime), "Must be less than a day.");
+
+                _offset = new TimeSpan(0, 0, firstBarStartTime.Minutes, firstBarStartTime.Seconds, firstBarStartTime.Milliseconds);
+            }
+
+            // ReSharper disable PossibleInvalidOperationException
+            public DateTime GetRoundedBarTime(DateTime time) => _offset.HasValue ? time.RoundDown(Period.Value, (TimeSpan) _offset) : time.RoundDown(Period.Value);
+            // ReSharper restore PossibleInvalidOperationException
+
+            private readonly TimeSpan? _offset;
+        }
+
+        /// <summary>
+        /// Special case for bars which open time is defined by a function
+        /// </summary>
+        private class FuncPeriodSpecification : IPeriodSpecification
+        {
+            public TimeSpan? FirstBarStartTime { get; } = null;
+            public TimeSpan? Period { get; private set; }
+
+            public readonly Func<DateTime, CalendarInfo> _calendarInfoFunc;
+
+            public FuncPeriodSpecification(Func<DateTime, CalendarInfo> expiryFunc)
+            {
+                if (expiryFunc(DateTime.Now).Start > DateTime.Now)
+                {
+                    throw new ArgumentException($"{nameof(FuncPeriodSpecification)}: Please use a function that computes a date/time in the past (e.g.: Time.StartOfWeek and Time.StartOfMonth)");
+                }
+                _calendarInfoFunc = expiryFunc;
+            }
+
+            public DateTime GetRoundedBarTime(DateTime time)
+            {
+                var calendarInfo = _calendarInfoFunc(time);
+
+                Period = calendarInfo.Period;
+                return calendarInfo.Start;
+            }
         }
     }
 }

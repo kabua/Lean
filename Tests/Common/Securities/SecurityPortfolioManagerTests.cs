@@ -33,7 +33,6 @@ using QuantConnect.Brokerages.Backtesting;
 using QuantConnect.Tests.Engine;
 using QuantConnect.Algorithm;
 using QuantConnect.Data.UniverseSelection;
-using QuantConnect.Interfaces;
 using QuantConnect.Orders.Fees;
 using QuantConnect.Tests.Engine.DataFeeds;
 
@@ -77,7 +76,7 @@ namespace QuantConnect.Tests.Common.Securities
                                                : OrderDirection.Hold,
                 x.Get<decimal>("FillPrice"),
                 x.Get<int>("FillQuantity"),
-                0m)
+                OrderFee.Zero)
                 ).ToList();
 
             var equity = XDocument.Load(equityFile).Descendants("decimal")
@@ -94,8 +93,8 @@ namespace QuantConnect.Tests.Common.Securities
             var security = new Security(
                 SecurityExchangeHours,
                 subscriptions.Add(CASH, Resolution.Daily, TimeZones.NewYork, TimeZones.NewYork),
-                new Cash(CashBook.AccountCurrency, 0, 1m),
-                SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                new Cash(Currencies.USD, 0, 1m),
+                SymbolProperties.GetDefault(Currencies.USD),
                 ErrorCurrencyConverter.Instance
             );
             security.SetLeverage(10m);
@@ -140,7 +139,7 @@ namespace QuantConnect.Tests.Common.Securities
                                                : OrderDirection.Hold,
                 x.Get<decimal>("FillPrice"),
                 x.Get<int>("FillQuantity"),
-                0)
+                OrderFee.Zero)
                 ).ToList();
 
             var equity = XDocument.Load(equityFile).Descendants("decimal")
@@ -170,7 +169,7 @@ namespace QuantConnect.Tests.Common.Securities
 
             var jwbCash = portfolio.CashBook["JWB"];
             var mchCash = portfolio.CashBook["MCH"];
-            var usdCash = portfolio.CashBook["USD"];
+            var usdCash = portfolio.CashBook[Currencies.USD];
 
             var mchJwbSecurity = new QuantConnect.Securities.Forex.Forex(
                 SecurityExchangeHours,
@@ -272,15 +271,15 @@ namespace QuantConnect.Tests.Common.Securities
             var orderProcessor = new OrderProcessor();
             transactions.SetOrderProcessor(orderProcessor);
             var portfolio = new SecurityPortfolioManager(securities, transactions);
-            portfolio.CashBook["USD"].SetAmount(quantity);
+            portfolio.CashBook[Currencies.USD].SetAmount(quantity);
 
             var config = CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL);
             securities.Add(
                 new Security(
                     SecurityExchangeHours,
                     config,
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -292,12 +291,12 @@ namespace QuantConnect.Tests.Common.Securities
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, buyPrice, buyPrice, buyPrice, buyPrice, 1));
 
             var order = new MarketOrder(Symbols.AAPL, quantity, time) {Price = buyPrice};
-            var fill = new OrderEvent(order, DateTime.UtcNow, 0) { FillPrice = buyPrice, FillQuantity = quantity };
+            var fill = new OrderEvent(order, DateTime.UtcNow, OrderFee.Zero) { FillPrice = buyPrice, FillQuantity = quantity };
             orderProcessor.AddOrder(order);
             var request = new SubmitOrderRequest(OrderType.Market, security.Type, security.Symbol, order.Quantity, 0, 0, order.Time, null);
             request.SetOrderId(0);
             orderProcessor.AddTicket(new OrderTicket(null, request));
-            Assert.AreEqual(portfolio.CashBook["USD"].Amount, fill.FillPrice*fill.FillQuantity);
+            Assert.AreEqual(portfolio.CashBook[Currencies.USD].Amount, fill.FillPrice*fill.FillQuantity);
 
             portfolio.ProcessFill(fill);
 
@@ -315,6 +314,7 @@ namespace QuantConnect.Tests.Common.Securities
             time = time.AddDays(1);
             const decimal highPrice = buyPrice * 2;
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, highPrice, highPrice, highPrice, highPrice, 1));
+            portfolio.InvalidateTotalPortfolioValue();
 
             Assert.AreEqual(quantity, portfolio.MarginRemaining);
             Assert.AreEqual(quantity, portfolio.TotalMarginUsed);
@@ -330,6 +330,7 @@ namespace QuantConnect.Tests.Common.Securities
             time = time.AddDays(1);
             const decimal lowPrice = buyPrice/2;
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, lowPrice, lowPrice, lowPrice, lowPrice, 1));
+            portfolio.InvalidateTotalPortfolioValue();
 
             Assert.AreEqual(-quantity/2m, portfolio.MarginRemaining);
             Assert.AreEqual(quantity, portfolio.TotalMarginUsed);
@@ -348,6 +349,7 @@ namespace QuantConnect.Tests.Common.Securities
             // Stock price increase by minimum variation
             const decimal newPrice = lowPrice + 0.01m;
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, newPrice, newPrice, newPrice, newPrice, 1));
+            portfolio.InvalidateTotalPortfolioValue();
 
             // this would not cause a margin call, only a margin call warning
             marginCallOrders = portfolio.MarginCallModel.GetMarginCallOrders(out issueMarginCallWarning);
@@ -356,9 +358,10 @@ namespace QuantConnect.Tests.Common.Securities
 
             // Price drops again to previous low, margin call orders will be issued
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, lowPrice, lowPrice, lowPrice, lowPrice, 1));
+            portfolio.InvalidateTotalPortfolioValue();
 
             order = new MarketOrder(Symbols.AAPL, quantity, time) { Price = buyPrice };
-            fill = new OrderEvent(order, DateTime.UtcNow, 0) { FillPrice = buyPrice, FillQuantity = quantity };
+            fill = new OrderEvent(order, DateTime.UtcNow, OrderFee.Zero) { FillPrice = buyPrice, FillQuantity = quantity };
 
             portfolio.ProcessFill(fill);
 
@@ -379,13 +382,13 @@ namespace QuantConnect.Tests.Common.Securities
             var orderProcessor = new OrderProcessor();
             transactions.SetOrderProcessor(orderProcessor);
             var portfolio = new SecurityPortfolioManager(securities, transactions);
-            portfolio.CashBook["USD"].SetAmount(1000);
+            portfolio.CashBook[Currencies.USD].SetAmount(1000);
             portfolio.CashBook.Add("EUR",  1000, 1.1m);
             portfolio.CashBook.Add("GBP", -1000, 2.0m);
 
             var eurCash = portfolio.CashBook["EUR"];
             var gbpCash = portfolio.CashBook["GBP"];
-            var usdCash = portfolio.CashBook["USD"];
+            var usdCash = portfolio.CashBook[Currencies.USD];
 
             var time = DateTime.Now;
             var config1 = CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL);
@@ -393,8 +396,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     config1,
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -408,7 +411,7 @@ namespace QuantConnect.Tests.Common.Securities
                     SecurityExchangeHours,
                     usdCash,
                     config2,
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -457,19 +460,19 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Future, Symbols.Fut_SPY_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
 
-            var fillBuy = new OrderEvent(1, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 100, 100, 0);
+            var fillBuy = new OrderEvent(1, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 100, 100, OrderFee.Zero);
             portfolio.ProcessFill(fillBuy);
 
             Assert.AreEqual(0, portfolio.Cash);
             Assert.AreEqual(100, securities[Symbols.Fut_SPY_Feb19_2016].Holdings.Quantity);
 
-            var fillSell = new OrderEvent(2, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 100, -100, 0);
+            var fillSell = new OrderEvent(2, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 100, -100, OrderFee.Zero);
             portfolio.ProcessFill(fillSell);
 
             Assert.AreEqual(0, portfolio.Cash);
@@ -489,19 +492,19 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Future, Symbols.Fut_SPY_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    new SymbolProperties("", CashBook.AccountCurrency.ToUpper(), 50, 0.01m, 1),
+                    new Cash(Currencies.USD, 0, 1m),
+                    new SymbolProperties("", Currencies.USD, 50, 0.01m, 1),
                     ErrorCurrencyConverter.Instance
                 )
             );
 
-            var fillBuy = new OrderEvent(1, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 100, 100, 0);
+            var fillBuy = new OrderEvent(1, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 100, 100, OrderFee.Zero);
             portfolio.ProcessFill(fillBuy);
 
             Assert.AreEqual(0, portfolio.Cash);
             Assert.AreEqual(100, securities[Symbols.Fut_SPY_Feb19_2016].Holdings.Quantity);
 
-            var fillSell = new OrderEvent(2, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 99, -100, 0);
+            var fillSell = new OrderEvent(2, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 99, -100, OrderFee.Zero);
             portfolio.ProcessFill(fillSell);
 
             Assert.AreEqual(-100 * 50, portfolio.Cash);
@@ -521,21 +524,127 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Future, Symbols.Fut_SPY_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    new SymbolProperties("", CashBook.AccountCurrency.ToUpper(), 50, 0.01m, 1),
+                    new Cash(Currencies.USD, 0, 1m),
+                    new SymbolProperties("", Currencies.USD, 50, 0.01m, 1),
                     ErrorCurrencyConverter.Instance
                 )
             );
 
-            var fillBuy = new OrderEvent(1, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 100, 100, 0);
+            var fillBuy = new OrderEvent(1, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 100, 100, OrderFee.Zero);
             portfolio.ProcessFill(fillBuy);
 
-            Assert.AreEqual(100 * 100, securities[Symbols.Fut_SPY_Feb19_2016].Holdings.TotalSaleVolume);
+            var security = securities[Symbols.Fut_SPY_Feb19_2016];
+            Assert.AreEqual(100 * 100 * security.SymbolProperties.ContractMultiplier, security.Holdings.TotalSaleVolume);
 
-            var fillSell = new OrderEvent(2, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 100, -100, 0);
+            var fillSell = new OrderEvent(2, Symbols.Fut_SPY_Feb19_2016, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 100, -100, OrderFee.Zero);
             portfolio.ProcessFill(fillSell);
 
-            Assert.AreEqual(2 * 100 * 100, securities[Symbols.Fut_SPY_Feb19_2016].Holdings.TotalSaleVolume);
+            Assert.AreEqual(2 * 100 * 100 * security.SymbolProperties.ContractMultiplier, security.Holdings.TotalSaleVolume);
+        }
+
+        [Test]
+        public void BuyingSellingCfdDoesntAddToCash()
+        {
+            var securities = new SecurityManager(TimeKeeper);
+            var transactions = new SecurityTransactionManager(null, securities);
+            var portfolio = new SecurityPortfolioManager(securities, transactions);
+            portfolio.SetCash(0);
+            portfolio.SetCash("EUR", 0, 1.10m);
+
+            securities.Add(
+                Symbols.DE30EUR,
+                new Security(
+                    SecurityExchangeHours,
+                    CreateTradeBarDataConfig(SecurityType.Cfd, Symbols.DE30EUR),
+                    portfolio.CashBook["EUR"],
+                    SymbolProperties.GetDefault("EUR"),
+                    ErrorCurrencyConverter.Instance
+                )
+            );
+
+            var fillBuy = new OrderEvent(1, Symbols.DE30EUR, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 10000, 5, OrderFee.Zero);
+            portfolio.ProcessFill(fillBuy);
+
+            Assert.AreEqual(0, portfolio.Cash);
+            Assert.AreEqual(5, securities[Symbols.DE30EUR].Holdings.Quantity);
+
+            var fillSell = new OrderEvent(2, Symbols.DE30EUR, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 10000, -5, OrderFee.Zero);
+            portfolio.ProcessFill(fillSell);
+
+            Assert.AreEqual(0, portfolio.Cash);
+            Assert.AreEqual(0, securities[Symbols.DE30EUR].Holdings.Quantity);
+        }
+
+        [Test]
+        public void BuyingSellingCfdAddsToCashOnClose()
+        {
+            var securities = new SecurityManager(TimeKeeper);
+            var transactions = new SecurityTransactionManager(null, securities);
+            var portfolio = new SecurityPortfolioManager(securities, transactions);
+            portfolio.SetCash(0);
+            portfolio.SetCash("EUR", 0, 1.10m);
+
+            securities.Add(
+                Symbols.DE30EUR,
+                new Security(
+                    SecurityExchangeHours,
+                    CreateTradeBarDataConfig(SecurityType.Cfd, Symbols.DE30EUR),
+                    portfolio.CashBook["EUR"],
+                    SymbolProperties.GetDefault("EUR"),
+                    ErrorCurrencyConverter.Instance
+                )
+            );
+            securities[Symbols.DE30EUR].SettlementModel = new AccountCurrencyImmediateSettlementModel();
+
+            var fillBuy = new OrderEvent(1, Symbols.DE30EUR, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 10000, 5, OrderFee.Zero);
+            portfolio.ProcessFill(fillBuy);
+
+            Assert.AreEqual(0, portfolio.CashBook["EUR"].Amount);
+            Assert.AreEqual(0, portfolio.CashBook["USD"].Amount);
+            Assert.AreEqual(0, portfolio.Cash);
+            Assert.AreEqual(5, securities[Symbols.DE30EUR].Holdings.Quantity);
+
+            var fillSell = new OrderEvent(2, Symbols.DE30EUR, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 10100, -5, OrderFee.Zero);
+            portfolio.ProcessFill(fillSell);
+
+            // PNL = (10100 - 10000) * 5 * 1.10 = 550 USD
+            Assert.AreEqual(0, portfolio.CashBook["EUR"].Amount);
+            Assert.AreEqual(550, portfolio.CashBook["USD"].Amount);
+            Assert.AreEqual(550, portfolio.Cash);
+            Assert.AreEqual(0, securities[Symbols.DE30EUR].Holdings.Quantity);
+        }
+
+        [Test]
+        public void BuyingSellingCfdAddsCorrectSales()
+        {
+            var securities = new SecurityManager(TimeKeeper);
+            var transactions = new SecurityTransactionManager(null, securities);
+            var portfolio = new SecurityPortfolioManager(securities, transactions);
+            portfolio.SetCash(0);
+            portfolio.SetCash("EUR", 0, 1.10m);
+
+            securities.Add(
+                Symbols.DE30EUR,
+                new Security(
+                    SecurityExchangeHours,
+                    CreateTradeBarDataConfig(SecurityType.Cfd, Symbols.DE30EUR),
+                    portfolio.CashBook["EUR"],
+                    SymbolProperties.GetDefault("EUR"),
+                    ErrorCurrencyConverter.Instance
+                )
+            );
+
+            var fillBuy = new OrderEvent(1, Symbols.DE30EUR, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 10000, 5, OrderFee.Zero);
+            portfolio.ProcessFill(fillBuy);
+
+            // 10000 price * 5 quantity * 1.10 exchange rate = 55000 USD
+            Assert.AreEqual(55000, securities[Symbols.DE30EUR].Holdings.TotalSaleVolume);
+
+            var fillSell = new OrderEvent(2, Symbols.DE30EUR, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell, 10000, -5, OrderFee.Zero);
+            portfolio.ProcessFill(fillSell);
+
+            // 2 * 10000 price * 5 quantity * 1.10 exchange rate = 110000 USD
+            Assert.AreEqual(110000, securities[Symbols.DE30EUR].Holdings.TotalSaleVolume);
         }
 
         [Test]
@@ -551,13 +660,13 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
 
-            var fill = new OrderEvent(1, Symbols.AAPL, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell,  100, -100, 0);
+            var fill = new OrderEvent(1, Symbols.AAPL, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell,  100, -100, OrderFee.Zero);
             portfolio.ProcessFill(fill);
 
             Assert.AreEqual(100 * 100, portfolio.Cash);
@@ -577,14 +686,14 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
             securities[Symbols.AAPL].Holdings.SetHoldings(100, 100);
 
-            var fill = new OrderEvent(1, Symbols.AAPL, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell,  100, -100, 0);
+            var fill = new OrderEvent(1, Symbols.AAPL, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Sell,  100, -100, OrderFee.Zero);
             portfolio.ProcessFill(fill);
 
             Assert.AreEqual(100 * 100, portfolio.Cash);
@@ -604,14 +713,14 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
             securities[Symbols.AAPL].Holdings.SetHoldings(100, -100);
 
-            var fill = new OrderEvent(1, Symbols.AAPL, DateTime.MinValue,  OrderStatus.Filled, OrderDirection.Sell,  100, -100, 0);
+            var fill = new OrderEvent(1, Symbols.AAPL, DateTime.MinValue,  OrderStatus.Filled, OrderDirection.Sell,  100, -100, OrderFee.Zero);
             Assert.AreEqual(-100, securities[Symbols.AAPL].Holdings.Quantity);
             portfolio.ProcessFill(fill);
 
@@ -632,9 +741,9 @@ namespace QuantConnect.Tests.Common.Securities
                 Symbols.EURUSD,
                 new QuantConnect.Securities.Forex.Forex(
                     SecurityExchangeHours,
-                    portfolio.CashBook["USD"],
+                    portfolio.CashBook[Currencies.USD],
                     CreateTradeBarDataConfig(SecurityType.Forex, Symbols.EURUSD),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -642,13 +751,14 @@ namespace QuantConnect.Tests.Common.Securities
             Assert.AreEqual(0, security.Holdings.Quantity);
             Assert.AreEqual(1000, portfolio.Cash);
 
-            var orderFee = security.FeeModel.GetOrderFee(security, new MarketOrder(Symbols.EURUSD, 100, DateTime.MinValue));
+            var orderFee = security.FeeModel.GetOrderFee(new OrderFeeParameters(
+                security, new MarketOrder(Symbols.EURUSD, 100, DateTime.MinValue)));
             var fill = new OrderEvent(1, Symbols.EURUSD, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 1.1000m, 100, orderFee);
             portfolio.ProcessFill(fill);
             Assert.AreEqual(100, security.Holdings.Quantity);
             Assert.AreEqual(998, portfolio.Cash);
             Assert.AreEqual(100, portfolio.CashBook["EUR"].Amount);
-            Assert.AreEqual(888, portfolio.CashBook["USD"].Amount);
+            Assert.AreEqual(888, portfolio.CashBook[Currencies.USD].Amount);
         }
 
         [Test]
@@ -664,12 +774,12 @@ namespace QuantConnect.Tests.Common.Securities
                 Symbols.BTCUSD,
                 new QuantConnect.Securities.Crypto.Crypto(
                     SecurityExchangeHours,
-                    portfolio.CashBook["USD"],
+                    portfolio.CashBook[Currencies.USD],
                     CreateTradeBarDataConfig(
                         SecurityType.Crypto,
                         Symbols.BTCUSD
                     ),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -677,13 +787,14 @@ namespace QuantConnect.Tests.Common.Securities
             Assert.AreEqual(0, security.Holdings.Quantity);
             Assert.AreEqual(10000, portfolio.Cash);
 
-            var orderFee = security.FeeModel.GetOrderFee(security, new MarketOrder(Symbols.BTCUSD, 2, DateTime.MinValue));
-            var fill = new OrderEvent(1, Symbols.BTCUSD, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 4000.01m, 2, orderFee);
+            var orderFee = security.FeeModel.GetOrderFee(new OrderFeeParameters(
+                security, new MarketOrder(Symbols.BTCUSD, 2, DateTime.MinValue)));
+            var fill = new OrderEvent(1, Symbols.BTCUSD, DateTime.MinValue, OrderStatus.Filled, OrderDirection.Buy, 4000.01m, 2, OrderFee.Zero);
             portfolio.ProcessFill(fill);
             Assert.AreEqual(2, security.Holdings.Quantity);
             Assert.AreEqual(10000, portfolio.Cash);
             Assert.AreEqual(2, portfolio.CashBook["BTC"].Amount);
-            Assert.AreEqual(1999.98, portfolio.CashBook["USD"].Amount);
+            Assert.AreEqual(1999.98, portfolio.CashBook[Currencies.USD].Amount);
         }
 
         [Test]
@@ -699,8 +810,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new QuantConnect.Securities.Equity.Equity(
                     securityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -712,16 +823,17 @@ namespace QuantConnect.Tests.Common.Securities
 
             // Buy on Monday
             var timeUtc = new DateTime(2015, 10, 26, 15, 30, 0);
-            var orderFee = security.FeeModel.GetOrderFee(security,new MarketOrder(Symbols.AAPL, 10, timeUtc));
+            var orderFee = security.FeeModel.GetOrderFee(new OrderFeeParameters(
+                security, new MarketOrder(Symbols.AAPL, 10, timeUtc)));
             var fill = new OrderEvent(1, Symbols.AAPL, timeUtc, OrderStatus.Filled, OrderDirection.Buy, 100, 10, orderFee);
             portfolio.ProcessFill(fill);
-            Assert.AreEqual(10, security.Holdings.Quantity);
-            Assert.AreEqual(-1, portfolio.Cash);
+            Assert.AreEqual(10, security.Holdings.Quantity);            Assert.AreEqual(-1, portfolio.Cash);
             Assert.AreEqual(0, portfolio.UnsettledCash);
 
             // Sell on Tuesday, cash unsettled
             timeUtc = timeUtc.AddDays(1);
-            orderFee = security.FeeModel.GetOrderFee(security, new MarketOrder(Symbols.AAPL, 10, timeUtc));
+            orderFee = security.FeeModel.GetOrderFee(new OrderFeeParameters(
+                security, new MarketOrder(Symbols.AAPL, 10, timeUtc)));
             fill = new OrderEvent(2, Symbols.AAPL, timeUtc, OrderStatus.Filled, OrderDirection.Sell, 100, -10, orderFee);
             portfolio.ProcessFill(fill);
             Assert.AreEqual(0, security.Holdings.Quantity);
@@ -754,15 +866,15 @@ namespace QuantConnect.Tests.Common.Securities
             var orderProcessor = new OrderProcessor();
             transactions.SetOrderProcessor(orderProcessor);
             var portfolio = new SecurityPortfolioManager(securities, transactions);
-            portfolio.CashBook["USD"].SetAmount(amount);
+            portfolio.CashBook[Currencies.USD].SetAmount(amount);
 
             var config = CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL);
             securities.Add(
                 new Security(
                     SecurityExchangeHours,
                     config,
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -774,7 +886,8 @@ namespace QuantConnect.Tests.Common.Securities
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, buyPrice, buyPrice, buyPrice, buyPrice, 1));
 
             var order = new MarketOrder(Symbols.AAPL, quantity, time) { Price = buyPrice };
-            var fill = new OrderEvent(order, DateTime.UtcNow, 0) { FillPrice = buyPrice, FillQuantity = quantity };
+            var fill = new OrderEvent(order, DateTime.UtcNow, OrderFee.Zero)
+                { FillPrice = buyPrice, FillQuantity = quantity };
             orderProcessor.AddOrder(order);
             var request = new SubmitOrderRequest(OrderType.Market, security.Type, security.Symbol, order.Quantity, 0, 0, order.Time, null);
             request.SetOrderId(0);
@@ -796,6 +909,7 @@ namespace QuantConnect.Tests.Common.Securities
             time = time.AddDays(1);
             const decimal lowPrice = buyPrice / 2;
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, lowPrice, lowPrice, lowPrice, lowPrice, 1));
+            portfolio.InvalidateTotalPortfolioValue();
 
             // we still should be able to place sell to zero
             newOrder = new MarketOrder(Symbols.AAPL, -quantity, time.AddSeconds(1)) { Price = lowPrice };
@@ -819,15 +933,15 @@ namespace QuantConnect.Tests.Common.Securities
             var orderProcessor = new OrderProcessor();
             transactions.SetOrderProcessor(orderProcessor);
             var portfolio = new SecurityPortfolioManager(securities, transactions);
-            portfolio.CashBook["USD"].SetAmount(amount);
+            portfolio.CashBook[Currencies.USD].SetAmount(amount);
 
             var config = CreateTradeBarDataConfig(SecurityType.Equity, Symbols.AAPL);
             securities.Add(
                 new Security(
                     SecurityExchangeHours,
                     config,
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -839,7 +953,8 @@ namespace QuantConnect.Tests.Common.Securities
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, sellPrice, sellPrice, sellPrice, sellPrice, 1));
 
             var order = new MarketOrder(Symbols.AAPL, -quantity, time) { Price = sellPrice };
-            var fill = new OrderEvent(order, DateTime.UtcNow, 0) { FillPrice = sellPrice, FillQuantity = -quantity };
+            var fill = new OrderEvent(order, DateTime.UtcNow, OrderFee.Zero)
+                { FillPrice = sellPrice, FillQuantity = -quantity };
             orderProcessor.AddOrder(order);
             var request = new SubmitOrderRequest(OrderType.Market, security.Type, security.Symbol, order.Quantity, 0, 0, order.Time, null);
             request.SetOrderId(0);
@@ -861,6 +976,7 @@ namespace QuantConnect.Tests.Common.Securities
             time = time.AddDays(1);
             const decimal highPrice = sellPrice * 2;
             security.SetMarketPrice(new TradeBar(time, Symbols.AAPL, highPrice, highPrice, highPrice, highPrice, 1));
+            portfolio.InvalidateTotalPortfolioValue();
 
             // we still shouldn be able to place cover to zero
             newOrder = new MarketOrder(Symbols.AAPL, quantity, time.AddSeconds(1)) { Price = highPrice };
@@ -894,8 +1010,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -904,7 +1020,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -954,8 +1070,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -964,7 +1080,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1013,8 +1129,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1023,7 +1139,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_P_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_P_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1073,8 +1189,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1083,7 +1199,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_P_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_P_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1134,8 +1250,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1144,7 +1260,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1193,8 +1309,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1203,7 +1319,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1260,8 +1376,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1270,7 +1386,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_P_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_P_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1323,8 +1439,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1333,7 +1449,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_P_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_P_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1386,8 +1502,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1396,7 +1512,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1445,8 +1561,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1455,7 +1571,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1503,8 +1619,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1513,7 +1629,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_P_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_P_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1562,8 +1678,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1572,7 +1688,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1622,8 +1738,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1632,7 +1748,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1681,8 +1797,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1691,7 +1807,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1741,8 +1857,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1751,7 +1867,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1803,8 +1919,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1813,7 +1929,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_C_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_C_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1867,8 +1983,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1877,7 +1993,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_P_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_P_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1931,8 +2047,8 @@ namespace QuantConnect.Tests.Common.Securities
                 new Security(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 )
             );
@@ -1941,7 +2057,7 @@ namespace QuantConnect.Tests.Common.Securities
                 new Option(
                     SecurityExchangeHours,
                     CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY_P_192_Feb19_2016),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
+                    new Cash(Currencies.USD, 0, 1m),
                     GetOptionSymbolProperties(Symbols.SPY_P_192_Feb19_2016),
                     ErrorCurrencyConverter.Instance
                 )
@@ -1990,7 +2106,11 @@ namespace QuantConnect.Tests.Common.Securities
             spy.Holdings.SetHoldings(100m, 100);
 
             var split = new Split(Symbols.SPY, new DateTime(2000, 01, 01), 100, 0.5m, SplitType.SplitOccurred);
-            algorithm.Portfolio.ApplySplit(split, algorithm.LiveMode);
+            algorithm.Portfolio.ApplySplit(split,
+                algorithm.LiveMode,
+                algorithm.SubscriptionManager.SubscriptionDataConfigService
+                    .GetSubscriptionDataConfigs(spy.Symbol)
+                    .DataNormalizationMode());
 
             // confirm the split was properly applied to our holdings, no left over cash from split
             Assert.AreEqual(50m, spy.Price);
@@ -2015,12 +2135,76 @@ namespace QuantConnect.Tests.Common.Securities
             spy.Holdings.SetHoldings(100m, 100);
 
             var dividend = new Dividend(Symbols.SPY, new DateTime(2000, 01, 01), 100, 0.5m);
-            algorithm.Portfolio.ApplyDividend(dividend, algorithm.LiveMode);
+            algorithm.Portfolio.ApplyDividend(dividend,
+                algorithm.LiveMode,
+                algorithm.SubscriptionManager.SubscriptionDataConfigService
+                    .GetSubscriptionDataConfigs(spy.Symbol)
+                    .DataNormalizationMode());
 
             // confirm no changes were made
             Assert.AreEqual(100m, spy.Price);
             Assert.AreEqual(100, spy.Holdings.Quantity);
             Assert.AreEqual(initialCash, algorithm.Portfolio.CashBook.TotalValueInAccountCurrency);
+        }
+
+        [Test]
+        public void SetAccountCurrency()
+        {
+            var algorithm = new QCAlgorithm();
+            var securities = new SecurityManager(TimeKeeper);
+            var transactions = new SecurityTransactionManager(null, securities);
+            algorithm.Portfolio = new SecurityPortfolioManager(securities, transactions);
+
+            Assert.AreEqual(Currencies.USD, algorithm.AccountCurrency);
+            Assert.AreEqual(Currencies.USD, algorithm.Portfolio.CashBook.AccountCurrency);
+            var amount = algorithm.Portfolio.CashBook[Currencies.USD].Amount;
+
+            algorithm.SetAccountCurrency("btc");
+            Assert.AreEqual("BTC", algorithm.AccountCurrency);
+            Assert.AreEqual("BTC", algorithm.Portfolio.CashBook.AccountCurrency);
+            Assert.AreEqual(amount, algorithm.Portfolio.CashBook["BTC"].Amount);
+        }
+
+        [Test]
+        public void CanNotChangeAccountCurrencyAfterAddingASecurity()
+        {
+            var algorithm = new QCAlgorithm();
+            var securities = new SecurityManager(TimeKeeper);
+            var transactions = new SecurityTransactionManager(null, securities);
+            var portfolio = new SecurityPortfolioManager(securities, transactions);
+
+            algorithm.Securities = securities;
+
+            securities.Add(
+                Symbols.SPY,
+                new Security(
+                    SecurityExchangeHours,
+                    CreateTradeBarDataConfig(SecurityType.Equity, Symbols.SPY),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
+                    ErrorCurrencyConverter.Instance
+                )
+            );
+            Assert.Throws<InvalidOperationException>(() => portfolio.SetAccountCurrency(Currencies.USD));
+        }
+
+        [TestCase("SetCash(decimal cash)")]
+        [TestCase("SetCash(string symbol, ...)")]
+        public void CanNotChangeAccountCurrencyAfterSettingCash(string overload)
+        {
+            var securities = new SecurityManager(TimeKeeper);
+            var transactions = new SecurityTransactionManager(null, securities);
+            var portfolio = new SecurityPortfolioManager(securities, transactions);
+
+            if (overload == "SetCash(decimal cash)")
+            {
+                portfolio.SetCash(10);
+            }
+            else
+            {
+                portfolio.SetCash(Currencies.USD, 1, 1);
+            }
+            Assert.Throws<InvalidOperationException>(() => portfolio.SetAccountCurrency(Currencies.USD));
         }
 
         private SubscriptionDataConfig CreateTradeBarDataConfig(SecurityType type, Symbol symbol)
@@ -2033,12 +2217,14 @@ namespace QuantConnect.Tests.Common.Securities
                 return new SubscriptionDataConfig(typeof(TradeBar), symbol, Resolution.Minute, TimeZones.NewYork, TimeZones.NewYork, true, true, true);
             if (type == SecurityType.Crypto)
                 return new SubscriptionDataConfig(typeof(TradeBar), symbol, Resolution.Minute, TimeZones.NewYork, TimeZones.NewYork, true, true, true);
+            if (type == SecurityType.Cfd)
+                return new SubscriptionDataConfig(typeof(TradeBar), symbol, Resolution.Minute, TimeZones.NewYork, TimeZones.NewYork, true, true, true);
             throw new NotImplementedException(type.ToString());
         }
 
         private static OptionSymbolProperties GetOptionSymbolProperties(Symbol symbol)
         {
-            return new OptionSymbolProperties(SymbolPropertiesDatabase.FromDataFolder().GetSymbolProperties(symbol.ID.Market, symbol, symbol.SecurityType, CashBook.AccountCurrency));
+            return new OptionSymbolProperties(SymbolPropertiesDatabase.FromDataFolder().GetSymbolProperties(symbol.ID.Market, symbol, symbol.SecurityType, Currencies.USD));
         }
 
         private static TimeKeeper TimeKeeper

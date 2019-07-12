@@ -383,7 +383,9 @@ namespace QuantConnect.Algorithm
             {
                 using (Py.GIL())
                 {
-                    indicator.InvokeMethod("Update", new[] { consolidated.ToPython() });
+                    var data = consolidated.ToPython();
+                    indicator.InvokeMethod("Update", new[] { data });
+                    data.Dispose();
                 }
             };
         }
@@ -396,29 +398,19 @@ namespace QuantConnect.Algorithm
         /// <seealso cref="Plot(string,decimal)"/>
         public void Plot(string series, PyObject pyObject)
         {
-            IIndicator<IndicatorDataPoint> indicator;
-
             using (Py.GIL())
             {
-                var pythonType = pyObject.GetPythonType();
-
                 try
                 {
-                    var type = pythonType.As<Type>();
-                    indicator = pyObject.AsManagedObject(type) as IIndicator<IndicatorDataPoint>;
-
-                    if (indicator == null)
-                    {
-                        throw new ArgumentException();
-                    }
+                    var value = (((dynamic)pyObject).Current.Value as PyObject).GetAndDispose<decimal>();
+                    Plot(series, value);
                 }
                 catch
                 {
-                    throw new ArgumentException($"QCAlgorithm.Plot(): The last argument should be a QuantConnect Indicator object, {pythonType.Repr()} was provided.");
+                    var pythonType = pyObject.GetPythonType().Repr();
+                    throw new ArgumentException($"QCAlgorithm.Plot(): The last argument should be a QuantConnect Indicator object, {pythonType} was provided.");
                 }
             }
-
-            Plot(series, indicator.Current.Value);
         }
 
         /// <summary>
@@ -598,7 +590,7 @@ namespace QuantConnect.Algorithm
                         .FirstOrDefault(s => s.Type.BaseType == CreateType(type).BaseType);
                 if (config == null) return null;
 
-                return CreateHistoryRequest(config, start, end, resolution);
+                return _historyRequestFactory.CreateHistoryRequest(config, start, end, GetExchangeHours(x), resolution);
             });
 
             return PandasConverter.GetDataFrame(History(requests.Where(x => x != null)).Memoize());
@@ -625,9 +617,10 @@ namespace QuantConnect.Algorithm
                         .FirstOrDefault(s => s.Type.BaseType == CreateType(type).BaseType);
                 if (config == null) return null;
 
-                Resolution? res = resolution ?? security.Resolution;
-                var start = GetStartTimeAlgoTz(x, periods, resolution).ConvertToUtc(TimeZone);
-                return CreateHistoryRequest(config, start, UtcTime.RoundDown(res.Value.ToTimeSpan()), resolution);
+                var res = GetResolution(x, resolution);
+                var exchange = GetExchangeHours(x);
+                var start = _historyRequestFactory.GetStartTimeAlgoTz(x, periods, res.Value, exchange);
+                return _historyRequestFactory.CreateHistoryRequest(config, start, Time.RoundDown(res.Value.ToTimeSpan()), exchange, res);
             });
 
             return PandasConverter.GetDataFrame(History(requests.Where(x => x != null)).Memoize());
@@ -669,7 +662,7 @@ namespace QuantConnect.Algorithm
                 throw new ArgumentException("The specified security is not of the requested type. Symbol: " + symbol.ToString() + " Requested Type: " + requestedType.Name + " Actual Type: " + actualType);
             }
 
-            var request = CreateHistoryRequest(config, start, end, resolution);
+            var request = _historyRequestFactory.CreateHistoryRequest(config, start, end, GetExchangeHours(symbol), resolution);
             return PandasConverter.GetDataFrame(History(request).Memoize());
         }
 
@@ -687,8 +680,9 @@ namespace QuantConnect.Algorithm
         {
             if (resolution == Resolution.Tick) throw new ArgumentException("History functions that accept a 'periods' parameter can not be used with Resolution.Tick");
 
-            var start = GetStartTimeAlgoTz(symbol, periods, resolution);
-            var end = Time.RoundDown((resolution ?? Securities[symbol].Resolution).ToTimeSpan());
+            var res = GetResolution(symbol, resolution);
+            var start = _historyRequestFactory.GetStartTimeAlgoTz(symbol, periods, res.Value, GetExchangeHours(symbol));
+            var end = Time.RoundDown(res.Value.ToTimeSpan());
             return History(type, symbol, start, end, resolution);
         }
 
@@ -932,6 +926,44 @@ namespace QuantConnect.Algorithm
             }
 
             return Consolidate(symbol, period, null, handler.ConvertToDelegate<Action<BaseData>>());
+        }
+
+        /// <summary>
+        /// Registers the <paramref name="handler"/> to receive consolidated data for the specified symbol
+        /// </summary>
+        /// <param name="symbol">The symbol who's data is to be consolidated</param>
+        /// <param name="calendarType">The consolidation calendar type</param>
+        /// <param name="handler">Data handler receives new consolidated data when generated</param>
+        /// <returns>A new consolidator matching the requested parameters with the handler already registered</returns>
+        public IDataConsolidator Consolidate(Symbol symbol, Func<DateTime, CalendarInfo> calendarType, PyObject handler)
+        {
+            return Consolidate(symbol, calendarType, null, handler);
+        }
+
+        /// <summary>
+        /// Registers the <paramref name="handler"/> to receive consolidated data for the specified symbol
+        /// </summary>
+        /// <param name="symbol">The symbol who's data is to be consolidated</param>
+        /// <param name="calendarType">The consolidation calendar type</param>
+        /// <param name="tickType">The tick type of subscription used as data source for consolidator. Specify null to use first subscription found.</param>
+        /// <param name="handler">Data handler receives new consolidated data when generated</param>
+        /// <returns>A new consolidator matching the requested parameters with the handler already registered</returns>
+        private IDataConsolidator Consolidate(Symbol symbol, Func<DateTime, CalendarInfo> calendarType, TickType? tickType, PyObject handler)
+        {
+            // resolve consolidator input subscription
+            var type = GetSubscription(symbol, tickType).Type;
+
+            if (type == typeof(TradeBar))
+            {
+                return Consolidate(symbol, calendarType, tickType, handler.ConvertToDelegate<Action<TradeBar>>());
+            }
+
+            if (type == typeof(QuoteBar))
+            {
+                return Consolidate(symbol, calendarType, tickType, handler.ConvertToDelegate<Action<QuoteBar>>());
+            }
+
+            return Consolidate(symbol, calendarType, tickType, handler.ConvertToDelegate<Action<BaseData>>());
         }
 
         /// <summary>

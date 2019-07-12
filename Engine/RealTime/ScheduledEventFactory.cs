@@ -1,11 +1,11 @@
 /*
  * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
  * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,10 +38,10 @@ namespace QuantConnect.Lean.Engine.RealTime
         /// <param name="dates">The dates to set events for at the specified time. These act as a base time to which
         /// the <paramref name="timeOfDay"/> is added to, that is, the implementation does not use .Date before
         /// the addition</param>
-        /// <param name="timeOfDay">The time each tradable date to fire the event</param>
+        /// <param name="timeOfDay">The time each tradeable date to fire the event</param>
         /// <param name="callback">The delegate to call when an event fires</param>
         /// <param name="currentUtcTime">Specfies the current time in UTC, before which, no events will be scheduled. Specify null to skip this filter.</param>
-        /// <returns>A new <see cref="ScheduledEvent"/> instance that fires events each tradable day from the start to the finish at the specified time</returns>
+        /// <returns>A new <see cref="ScheduledEvent"/> instance that fires events each tradeable day from the start to the finish at the specified time</returns>
         public static ScheduledEvent EveryDayAt(string name, IEnumerable<DateTime> dates, TimeSpan timeOfDay, Action<string, DateTime> callback, DateTime? currentUtcTime = null)
         {
             var eventTimes = dates.Select(x => x.Date + timeOfDay);
@@ -53,7 +53,7 @@ namespace QuantConnect.Lean.Engine.RealTime
         }
 
         /// <summary>
-        /// Creates a new <see cref="ScheduledEvent"/> that will fire before market close by the specified time 
+        /// Creates a new <see cref="ScheduledEvent"/> that will fire before market close by the specified time
         /// </summary>
         /// <param name="algorithm">The algorithm instance the event is fo</param>
         /// <param name="resultHandler">The result handler, used to communicate run time errors</param>
@@ -61,7 +61,8 @@ namespace QuantConnect.Lean.Engine.RealTime
         /// <param name="end">The date to end the events</param>
         /// <param name="endOfDayDelta">The time difference between the market close and the event, positive time will fire before market close</param>
         /// <param name="currentUtcTime">Specfies the current time in UTC, before which, no events will be scheduled. Specify null to skip this filter.</param>
-        /// <returns>The new <see cref="ScheduledEvent"/> that will fire near market close each tradable dat</returns>
+        /// <returns>The new <see cref="ScheduledEvent"/> that will fire near market close each tradeable dat</returns>
+        [Obsolete("This method is deprecated. It will generate ScheduledEvents for the deprecated IAlgorithm.OnEndOfDay()")]
         public static ScheduledEvent EveryAlgorithmEndOfDay(IAlgorithm algorithm, IResultHandler resultHandler, DateTime start, DateTime end, TimeSpan endOfDayDelta, DateTime? currentUtcTime = null)
         {
             if (endOfDayDelta >= Time.OneDay)
@@ -69,7 +70,7 @@ namespace QuantConnect.Lean.Engine.RealTime
                 throw new ArgumentException("Delta must be less than a day", "endOfDayDelta");
             }
 
-            // set up an event to fire every tradable date for the algorithm as a whole
+            // set up an event to fire every tradeable date for the algorithm as a whole
             var eodEventTime = Time.OneDay.Subtract(endOfDayDelta);
 
             // create enumerable of end of day in algorithm's time zone
@@ -99,16 +100,16 @@ namespace QuantConnect.Lean.Engine.RealTime
         }
 
         /// <summary>
-        /// Creates a new <see cref="ScheduledEvent"/> that will fire before market close by the specified time 
+        /// Creates a new <see cref="ScheduledEvent"/> that will fire before market close by the specified time
         /// </summary>
         /// <param name="algorithm">The algorithm instance the event is fo</param>
         /// <param name="resultHandler">The result handler, used to communicate run time errors</param>
-        /// <param name="security">The security used for defining tradable dates</param>
+        /// <param name="security">The security used for defining tradeable dates</param>
         /// <param name="start">The first date for the events</param>
         /// <param name="end">The date to end the events</param>
         /// <param name="endOfDayDelta">The time difference between the market close and the event, positive time will fire before market close</param>
         /// <param name="currentUtcTime">Specfies the current time in UTC, before which, no events will be scheduled. Specify null to skip this filter.</param>
-        /// <returns>The new <see cref="ScheduledEvent"/> that will fire near market close each tradable dat</returns>
+        /// <returns>The new <see cref="ScheduledEvent"/> that will fire near market close each tradeable dat</returns>
         public static ScheduledEvent EverySecurityEndOfDay(IAlgorithm algorithm, IResultHandler resultHandler, Security security, DateTime start, DateTime end, TimeSpan endOfDayDelta, DateTime? currentUtcTime = null)
         {
             if (endOfDayDelta >= Time.OneDay)
@@ -116,7 +117,7 @@ namespace QuantConnect.Lean.Engine.RealTime
                 throw new ArgumentException("Delta must be less than a day", "endOfDayDelta");
             }
 
-            // define all the times we want this event to be fired, every tradable day for the securtiy
+            // define all the times we want this event to be fired, every tradeable day for the securtiy
             // at the delta time before market close expressed in UTC
             var times =
                 // for every date the exchange is open for this security

@@ -21,7 +21,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NodaTime;
 using NUnit.Framework;
-using QuantConnect.Algorithm.Framework;
+using QuantConnect.Algorithm;
 using QuantConnect.Configuration;
 using QuantConnect.Data;
 using QuantConnect.Interfaces;
@@ -32,6 +32,7 @@ using QuantConnect.Lean.Engine.Results;
 using QuantConnect.Lean.Engine.Setup;
 using QuantConnect.Logging;
 using QuantConnect.Packets;
+using QuantConnect.Tests.Common.Securities;
 using QuantConnect.Util;
 using HistoryRequest = QuantConnect.Data.HistoryRequest;
 
@@ -45,7 +46,7 @@ namespace QuantConnect.Tests
         public static void RunLocalBacktest(string algorithm, Dictionary<string, string> expectedStatistics, AlphaRuntimeStatistics expectedAlphaStatistics, Language language)
         {
             var statistics = new Dictionary<string, string>();
-            var alphaStatistics = new AlphaRuntimeStatistics();
+            var alphaStatistics = new AlphaRuntimeStatistics(new TestAccountCurrencyProvider());
             var algorithmManager = new AlgorithmManager(false);
 
             Composer.Instance.Reset();
@@ -97,6 +98,9 @@ namespace QuantConnect.Tests
                             string algorithmPath;
                             var job = systemHandlers.JobQueue.NextJob(out algorithmPath);
                             ((BacktestNodePacket)job).BacktestId = algorithm;
+
+                            systemHandlers.LeanManager.Initialize(systemHandlers, algorithmHandlers, job, algorithmManager);
+
                             engine.Run(job, algorithmManager, algorithmPath);
                             ordersLogFile = ((RegressionResultHandler)algorithmHandlers.Results).OrdersLogFilePath;
                         }
@@ -184,7 +188,7 @@ namespace QuantConnect.Tests
             public override IAlgorithm CreateAlgorithmInstance(AlgorithmNodePacket algorithmNodePacket, string assemblyPath)
             {
                 Algorithm = base.CreateAlgorithmInstance(algorithmNodePacket, assemblyPath);
-                var framework = Algorithm as QCAlgorithmFramework;
+                var framework = Algorithm as QCAlgorithm;
                 if (framework != null)
                 {
                     framework.DebugMode = true;

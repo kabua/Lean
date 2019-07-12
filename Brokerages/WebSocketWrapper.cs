@@ -47,6 +47,7 @@ namespace QuantConnect.Brokerages
             _wrapped.OnOpen += (sender, args) => OnOpen();
             _wrapped.OnMessage += (sender, args) => OnMessage(new WebSocketMessage(args.Data));
             _wrapped.OnError += (sender, args) => OnError(new WebSocketError(args.Message, args.Exception));
+            _wrapped.OnClose += (sender, args) => OnClose();
         }
 
         /// <summary>
@@ -83,6 +84,11 @@ namespace QuantConnect.Brokerages
         public bool IsOpen => _wrapped.IsAlive;
 
         /// <summary>
+        /// Wraps ReadyState
+        /// </summary>
+        public WebSocketState ReadyState => _wrapped.ReadyState;
+
+        /// <summary>
         /// Wraps message event
         /// </summary>
         public event EventHandler<WebSocketMessage> Message;
@@ -96,6 +102,11 @@ namespace QuantConnect.Brokerages
         /// Wraps open method
         /// </summary>
         public event EventHandler Open;
+
+        /// <summary>
+        /// Wraps close method
+        /// </summary>
+        public event EventHandler Closed;
 
         /// <summary>
         /// Event invocator for the <see cref="Message"/> event
@@ -121,8 +132,17 @@ namespace QuantConnect.Brokerages
         /// </summary>
         protected virtual void OnOpen()
         {
-            Log.Trace($"WebSocketWrapper.OnOpen(): Connection opened({IsOpen}): {_url}");
+            Log.Trace($"WebSocketWrapper.OnOpen(): Connection opened (IsOpen:{IsOpen}): {_url}");
             Open?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Event invocator for the <see cref="Close"/> event
+        /// </summary>
+        protected virtual void OnClose()
+        {
+            Log.Trace($"WebSocketWrapper.OnClose(): Connection closed (IsOpen:{IsOpen}): {_url}");
+            Closed?.Invoke(this, EventArgs.Empty);
         }
     }
 }

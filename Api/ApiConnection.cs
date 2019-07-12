@@ -14,6 +14,7 @@
 */
 
 using System;
+using System.Net;
 using Newtonsoft.Json;
 using QuantConnect.API;
 using QuantConnect.Configuration;
@@ -88,6 +89,7 @@ namespace QuantConnect.Api
                 var timestamp = (int)Time.TimeStamp();
                 var hash = Api.CreateSecureHash(timestamp, _token);
                 request.AddHeader("Timestamp", timestamp.ToString());
+
                 Client.Authenticator = new HttpBasicAuthenticator(_userId, hash);
 
                 // Execute the authenticated REST API Call
@@ -102,7 +104,7 @@ namespace QuantConnect.Api
                 //Verify success
                 if (restsharpResponse.ErrorException != null)
                 {
-                    Log.Error(restsharpResponse.ErrorException);
+                    Log.Error($"ApiConnection.TryRequest({request.Resource}): Error: {restsharpResponse.ErrorException.Message}");
                     result = null;
                     return false;
                 }
@@ -117,7 +119,7 @@ namespace QuantConnect.Api
             }
             catch (Exception err)
             {
-                Log.Error($"Api.ApiConnection.TryRequest({request.Resource}): Failed to make REST request. Response content: {responseContent}, Error: {err}");
+                Log.Error($"ApiConnection.TryRequest({request.Resource}): Error: {err.Message}, Response content: {responseContent}");
                 result = null;
                 return false;
             }

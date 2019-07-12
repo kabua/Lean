@@ -16,6 +16,7 @@
 using System;
 using QuantConnect.Logging;
 using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
 
 namespace QuantConnect.Securities
 {
@@ -137,13 +138,16 @@ namespace QuantConnect.Securities
         {
             //Get the order value from the non-abstract order classes (MarketOrder, LimitOrder, StopMarketOrder)
             //Market order is approximated from the current security price and set in the MarketOrder Method in QCAlgorithm.
-            var orderFees = parameters.Security.FeeModel.GetOrderFee(
-                parameters.Security,
-                parameters.Order);
+
+            var fees = parameters.Security.FeeModel.GetOrderFee(
+                new OrderFeeParameters(parameters.Security,
+                    parameters.Order)).Value;
+            var feesInAccountCurrency = parameters.CurrencyConverter.
+                ConvertToAccountCurrency(fees).Amount;
 
             var orderValue = parameters.Order.GetValue(parameters.Security)
                 * GetInitialMarginRequirement(parameters.Security);
-            return orderValue + Math.Sign(orderValue) * orderFees;
+            return orderValue + Math.Sign(orderValue) * feesInAccountCurrency;
         }
 
         /// <summary>
@@ -169,7 +173,8 @@ namespace QuantConnect.Securities
             OrderDirection direction
             )
         {
-            var result = portfolio.MarginRemaining;
+            var totalPortfolioValue = portfolio.TotalPortfolioValue;
+            var result = portfolio.GetMarginRemaining(totalPortfolioValue);
 
             if (direction != OrderDirection.Hold)
             {
@@ -204,7 +209,7 @@ namespace QuantConnect.Securities
                 }
             }
 
-            result -= portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent;
+            result -= totalPortfolioValue * RequiredFreeBuyingPowerPercent;
             return result < 0 ? 0 : result;
         }
 
@@ -309,9 +314,12 @@ namespace QuantConnect.Securities
         /// <returns>Returns the maximum allowed market order quantity and if zero, also the reason</returns>
         public virtual GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(GetMaximumOrderQuantityForTargetValueParameters parameters)
         {
+            // this is expensive so lets fetch it once
+            var totalPortfolioValue = parameters.Portfolio.TotalPortfolioValue;
+
             // adjust target portfolio value to comply with required Free Buying Power Percent
             var targetPortfolioValue =
-                parameters.Target * (parameters.Portfolio.TotalPortfolioValue - parameters.Portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent);
+                parameters.Target * (totalPortfolioValue - totalPortfolioValue * RequiredFreeBuyingPowerPercent);
 
             // if targeting zero, simply return the negative of the quantity
             if (targetPortfolioValue == 0)
@@ -326,7 +334,8 @@ namespace QuantConnect.Securities
             var direction = targetPortfolioValue > currentHoldingsValue ? OrderDirection.Buy : OrderDirection.Sell;
 
             // determine the unit price in terms of the account currency
-            var unitPrice = new MarketOrder(parameters.Security.Symbol, 1, DateTime.UtcNow).GetValue(parameters.Security);
+            var utcTime = parameters.Security.LocalTime.ConvertToUtc(parameters.Security.Exchange.TimeZone);
+            var unitPrice = new MarketOrder(parameters.Security.Symbol, 1, utcTime).GetValue(parameters.Security);
             if (unitPrice == 0)
             {
                 var reason = $"The price of the {parameters.Security.Symbol.Value} security is zero because it does not have any market " +
@@ -386,13 +395,17 @@ namespace QuantConnect.Securities
                 }
 
                 // generate the order
-                var order = new MarketOrder(parameters.Security.Symbol, orderQuantity, DateTime.UtcNow);
-                orderFees = parameters.Security.FeeModel.GetOrderFee(parameters.Security, order);
+                var order = new MarketOrder(parameters.Security.Symbol, orderQuantity, utcTime);
+
+                var fees = parameters.Security.FeeModel.GetOrderFee(
+                    new OrderFeeParameters(parameters.Security,
+                        order)).Value;
+                orderFees = parameters.Portfolio.CashBook.ConvertToAccountCurrency(fees).Amount;
 
                 // The TPV, take out the fees(unscaled) => yields available value for trading(less fees)
                 // then scale that by the target -- finally remove currentHoldingsValue to get targetOrderValue
                 targetOrderValue = Math.Abs(
-                    (parameters.Portfolio.TotalPortfolioValue - orderFees - parameters.Portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent)
+                    (totalPortfolioValue - orderFees - totalPortfolioValue * RequiredFreeBuyingPowerPercent)
                     * parameters.Target - currentHoldingsValue
                 );
 

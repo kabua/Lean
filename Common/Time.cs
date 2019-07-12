@@ -36,6 +36,11 @@ namespace QuantConnect
         public static readonly DateTime EndOfTime = new DateTime(2050, 12, 31);
 
         /// <summary>
+        /// Provides a time span based on <see cref="EndOfTime"/>
+        /// </summary>
+        public static TimeSpan EndOfTimeTimeSpan = new TimeSpan(EndOfTime.Ticks);
+
+        /// <summary>
         /// Provides a value far enough in the past that can be used as a lower bound on dates
         /// </summary>
         /// <value>
@@ -360,20 +365,21 @@ namespace QuantConnect
                 var currentInTimeZone = currentExchangeTime.ConvertTo(exchange.TimeZone, timeZone);
                 var currentInTimeZoneEod = currentInTimeZone.Date.AddDays(1);
 
+                var currentExchangeTimeEod = currentInTimeZoneEod.ConvertTo(timeZone, exchange.TimeZone);
+
                 // don't pass the end
-                if (currentInTimeZoneEod.ConvertTo(timeZone, exchange.TimeZone) > thru)
+                if (currentExchangeTimeEod > thru)
                 {
-                    currentInTimeZoneEod = thru.ConvertTo(exchange.TimeZone, timeZone);
+                    currentExchangeTimeEod = thru;
                 }
 
                 // perform market open checks in the exchange time zone
-                var currentExchangeTimeEod = currentInTimeZoneEod.ConvertTo(timeZone, exchange.TimeZone);
                 if (exchange.IsOpen(currentExchangeTime, currentExchangeTimeEod, includeExtendedMarketHours))
                 {
                     yield return currentInTimeZone.Date;
                 }
 
-                currentExchangeTime = currentInTimeZoneEod.ConvertTo(timeZone, exchange.TimeZone);
+                currentExchangeTime = currentExchangeTimeEod;
             }
         }
 
@@ -389,7 +395,7 @@ namespace QuantConnect
             {
                 foreach (var security in securities)
                 {
-                    if (security.Exchange.IsOpenDuringBar(day.Date, day.Date.AddDays(1), security.IsExtendedMarketHours)) return true;
+                    if (security.Exchange.DateIsOpen(day.Date)) return true;
                 }
             }
             catch (Exception err)

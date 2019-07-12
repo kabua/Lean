@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using QuantConnect.Data;
 using QuantConnect.Interfaces;
+using System;
 
 namespace QuantConnect.Securities
 {
@@ -60,14 +61,18 @@ namespace QuantConnect.Securities
 
             var exchangeHours = _marketHoursDatabase.GetEntry(symbol.ID.Market, symbol, symbol.ID.SecurityType).ExchangeHours;
 
-            var defaultQuoteCurrency = CashBook.AccountCurrency;
-            if (symbol.ID.SecurityType == SecurityType.Forex || symbol.ID.SecurityType == SecurityType.Crypto)
+            var defaultQuoteCurrency = _cashBook.AccountCurrency;
+            if (symbol.ID.SecurityType == SecurityType.Forex)
             {
                 defaultQuoteCurrency = symbol.Value.Substring(3);
             }
 
-            var symbolProperties = _symbolPropertiesDatabase.GetSymbolProperties(symbol.ID.Market, symbol, symbol.ID.SecurityType, defaultQuoteCurrency);
+            if (symbol.ID.SecurityType == SecurityType.Crypto && !_symbolPropertiesDatabase.ContainsKey(symbol.ID.Market, symbol, symbol.ID.SecurityType))
+            {
+                throw new ArgumentException($"Symbol can't be found in the Symbol Properties Database: {symbol.Value}");
+            }
 
+            var symbolProperties = _symbolPropertiesDatabase.GetSymbolProperties(symbol.ID.Market, symbol, symbol.ID.SecurityType, defaultQuoteCurrency);
             // add the symbol to our cache
             if (addToSymbolCache)
             {
@@ -85,7 +90,14 @@ namespace QuantConnect.Securities
             {
                 // decompose the symbol into each currency pair
                 string baseCurrency;
-                Forex.Forex.DecomposeCurrencyPair(symbol.Value, out baseCurrency, out quoteCurrency);
+                if (symbol.ID.SecurityType == SecurityType.Forex)
+                {
+                    Forex.Forex.DecomposeCurrencyPair(symbol.Value, out baseCurrency, out quoteCurrency);
+                }
+                else
+                {
+                    Crypto.Crypto.DecomposeCurrencyPair(symbol, symbolProperties, out baseCurrency, out quoteCurrency);
+                }
 
                 if (!_cashBook.ContainsKey(baseCurrency))
                 {
@@ -110,11 +122,11 @@ namespace QuantConnect.Securities
 
                 case SecurityType.Option:
                     if (addToSymbolCache) SymbolCache.Set(symbol.Underlying.Value, symbol.Underlying);
-                    security = new Option.Option(symbol, exchangeHours, _cashBook[CashBook.AccountCurrency], new Option.OptionSymbolProperties(symbolProperties), _cashBook);
+                    security = new Option.Option(symbol, exchangeHours, quoteCash, new Option.OptionSymbolProperties(symbolProperties), _cashBook);
                     break;
 
                 case SecurityType.Future:
-                    security = new Future.Future(symbol, exchangeHours, _cashBook[CashBook.AccountCurrency], symbolProperties, _cashBook);
+                    security = new Future.Future(symbol, exchangeHours, quoteCash, symbolProperties, _cashBook);
                     break;
 
                 case SecurityType.Forex:
@@ -154,8 +166,10 @@ namespace QuantConnect.Securities
                 security.SetLeverage(leverage);
             }
 
-            // In live mode, equity assumes specific price variation model
-            if (_isLiveMode && security.Type == SecurityType.Equity)
+            var isNotNormalized = configList.DataNormalizationMode() == DataNormalizationMode.Raw;
+
+            // In live mode and non normalized data, equity assumes specific price variation model
+            if ((_isLiveMode || isNotNormalized) && security.Type == SecurityType.Equity)
             {
                 security.PriceVariationModel = new EquityPriceVariationModel();
             }

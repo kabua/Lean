@@ -39,13 +39,33 @@ class EqualWeightingPortfolioConstructionModel(PortfolioConstructionModel):
         self.rebalancingTime = UTCMIN
         self.rebalancingPeriod = Extensions.ToTimeSpan(resolution)
 
+    def ShouldCreateTargetForInsight(self, insight):
+        '''Method that will determine if the portfolio construction model should create a
+        target for this insight
+        Args:
+            insight: The insight to create a target for'''
+        return True
+
+    def DetermineTargetPercent(self, activeInsights):
+        '''Will determine the target percent for each insight
+        Args:
+            activeInsights: The active insights to generate a target for'''
+        result = {}
+
+        # give equal weighting to each security
+        count = sum(x.Direction != InsightDirection.Flat for x in activeInsights)
+        percent = 0 if count == 0 else 1.0 / count
+        for insight in activeInsights:
+            result[insight] = insight.Direction * percent
+        return result
+
     def CreateTargets(self, algorithm, insights):
         '''Create portfolio targets from the specified insights
         Args:
             algorithm: The algorithm instance
-            insights: The insights to create portoflio targets from
+            insights: The insights to create portfolio targets from
         Returns:
-            An enumerable of portoflio targets to be sent to the execution model'''
+            An enumerable of portfolio targets to be sent to the execution model'''
 
         targets = []
 
@@ -55,7 +75,9 @@ class EqualWeightingPortfolioConstructionModel(PortfolioConstructionModel):
             self.removedSymbols is None):
             return targets
 
-        self.insightCollection.AddRange(insights)
+        for insight in insights:
+            if self.ShouldCreateTargetForInsight(insight):
+                self.insightCollection.Add(insight)
 
         # Create flatten target for each security that was removed from the universe
         if self.removedSymbols is not None:
@@ -71,13 +93,12 @@ class EqualWeightingPortfolioConstructionModel(PortfolioConstructionModel):
         for symbol, g in groupby(activeInsights, lambda x: x.Symbol):
             lastActiveInsights.append(sorted(g, key = lambda x: x.GeneratedTimeUtc)[-1])
 
-        # give equal weighting to each security
-        count = sum(x.Direction != InsightDirection.Flat for x in lastActiveInsights)
-        percent = 0 if count == 0 else 1.0 / count
+        # Determine target percent for the given insights
+        percents = self.DetermineTargetPercent(lastActiveInsights)
 
         errorSymbols = {}
         for insight in lastActiveInsights:
-            target = PortfolioTarget.Percent(algorithm, insight.Symbol, insight.Direction * percent)
+            target = PortfolioTarget.Percent(algorithm, insight.Symbol, percents[insight])
             if not target is None:
                 targets.append(target)
             else:

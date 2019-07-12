@@ -13,7 +13,6 @@
  * limitations under the License.
 */
 
-using QuantConnect.Algorithm.Framework;
 using QuantConnect.Algorithm.Framework.Alphas;
 using QuantConnect.Algorithm.Framework.Portfolio;
 using QuantConnect.Algorithm.Framework.Risk;
@@ -32,7 +31,7 @@ namespace QuantConnect.Algorithm.CSharp
     /// This example algorithm defines its own custom coarse/fine fundamental selection model
     /// with equally weighted portfolio and a maximum sector exposure
     /// </summary>
-    public class SectorExposureRiskFrameworkAlgorithm : QCAlgorithmFramework, IRegressionAlgorithmDefinition
+    public class SectorExposureRiskFrameworkAlgorithm : QCAlgorithm, IRegressionAlgorithmDefinition
     {
         public override void Initialize()
         {
@@ -113,7 +112,7 @@ namespace QuantConnect.Algorithm.CSharp
             {"Mean Population Estimated Insight Value", "$-178726.7"},
             {"Mean Population Direction", "36.6667%"},
             {"Mean Population Magnitude", "0%"},
-            {"Rolling Averaged Population Direction", "56.6585%"},
+            {"Rolling Averaged Population Direction", "56.482%"},
             {"Rolling Averaged Population Magnitude", "0%"}
         };
     }

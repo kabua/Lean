@@ -21,7 +21,6 @@ using System.Threading;
 using NUnit.Framework;
 using QuantConnect.Algorithm;
 using QuantConnect.Brokerages.InteractiveBrokers;
-using QuantConnect.Configuration;
 using QuantConnect.Data;
 using QuantConnect.Data.Market;
 using QuantConnect.Logging;
@@ -33,7 +32,7 @@ using QuantConnect.Tests.Engine.BrokerageTransactionHandlerTests;
 namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
 {
     [TestFixture]
-    [Ignore("These tests require the IBController and IB TraderWorkstation to be installed.")]
+    [Ignore("These tests require the IBGateway to be installed.")]
     public class InteractiveBrokersBrokerageTests
     {
         private readonly List<Order> _orders = new List<Order>();
@@ -44,14 +43,6 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
         [SetUp]
         public void InitializeBrokerage()
         {
-            InteractiveBrokersGatewayRunner.Start(Config.Get("ib-controller-dir"),
-                Config.Get("ib-tws-dir"),
-                Config.Get("ib-user-name"),
-                Config.Get("ib-password"),
-                Config.Get("ib-trading-mode"),
-                Config.GetBool("ib-use-tws")
-                );
-
             // grabs account info from configuration
             var securityProvider = new SecurityProvider();
             securityProvider[Symbols.USDJPY] = new Security(
@@ -66,8 +57,8 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
                     false,
                     false
                 ),
-                new Cash(CashBook.AccountCurrency, 0, 1m),
-                SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                new Cash(Currencies.USD, 0, 1m),
+                SymbolProperties.GetDefault(Currencies.USD),
                 ErrorCurrencyConverter.Instance
             );
 
@@ -130,13 +121,11 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
                 Log.Trace("InteractiveBrokersBrokerageTests.Teardown(): Account holdings: " + string.Join(", ", holdingsText));
                 //Assert.AreEqual(0, holdingsCount, "Failed to verify that there are zero account holdings.");
 
-                _interactiveBrokersBrokerage.Dispose();
-                _interactiveBrokersBrokerage = null;
                 _orders.Clear();
             }
             finally
             {
-                InteractiveBrokersGatewayRunner.Stop();
+                _interactiveBrokersBrokerage?.Dispose();
             }
         }
 
@@ -167,10 +156,6 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
             Assert.IsTrue(ib.IsConnected);
 
             ib.ResetGatewayConnection();
-            Assert.IsTrue(InteractiveBrokersGatewayRunner.IsRunning());
-            Assert.IsTrue(ib.IsConnected);
-
-            ib.CheckIbGateway();
             Assert.IsTrue(ib.IsConnected);
         }
 
@@ -481,9 +466,11 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
                 Console.WriteLine(holding.Value);
             }
 
-            Log.Trace("Quantity: " + previousHoldings[Symbols.USDJPY].Quantity);
-
-            bool hasSymbol = previousHoldings.ContainsKey(Symbols.USDJPY);
+            var hasSymbol = previousHoldings.ContainsKey(Symbols.USDJPY);
+            if (hasSymbol)
+            {
+                Log.Trace("Quantity: " + previousHoldings[Symbols.USDJPY].Quantity);
+            }
 
             // wait for order to complete before request account holdings
             var orderResetEvent = new ManualResetEvent(false);
@@ -523,13 +510,13 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
         {
             var ib = _interactiveBrokersBrokerage;
             var cashBalance = ib.GetCashBalance();
-            Assert.IsTrue(cashBalance.Any(x => x.Symbol == "USD"));
+            Assert.IsTrue(cashBalance.Any(x => x.Currency == Currencies.USD));
             foreach (var cash in cashBalance)
             {
                 Console.WriteLine(cash);
-                if (cash.Symbol == "USD")
+                if (cash.Currency == Currencies.USD)
                 {
-                    Assert.AreNotEqual(0m, cashBalance.Single(x => x.Symbol == "USD"));
+                    Assert.AreNotEqual(0m, cashBalance.Single(x => x.Currency == Currencies.USD));
                 }
             }
         }
@@ -578,7 +565,7 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
         {
             var ib = _interactiveBrokersBrokerage;
 
-            decimal balance = ib.GetCashBalance().Single(x => x.Symbol == "USD").Amount;
+            decimal balance = ib.GetCashBalance().Single(x => x.Currency == Currencies.USD).Amount;
 
             // wait for our order to fill
             var manualResetEvent = new ManualResetEvent(false);
@@ -590,7 +577,7 @@ namespace QuantConnect.Tests.Brokerages.InteractiveBrokers
 
             manualResetEvent.WaitOneAssertFail(3000, "Didn't receive account changed event");
 
-            decimal balanceAfterTrade = ib.GetCashBalance().Single(x => x.Symbol == "USD").Amount;
+            decimal balanceAfterTrade = ib.GetCashBalance().Single(x => x.Currency == Currencies.USD).Amount;
 
             Assert.AreNotEqual(balance, balanceAfterTrade);
         }

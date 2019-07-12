@@ -66,6 +66,7 @@ namespace QuantConnect.Lean.Engine.HistoricalData
             foreach (var request in requests)
             {
                 var subscription = CreateSubscription(request, request.StartTimeUtc, request.EndTimeUtc);
+
                 subscription.MoveNext(); // prime pump
                 subscriptions.Add(subscription);
             }
@@ -99,13 +100,19 @@ namespace QuantConnect.Lean.Engine.HistoricalData
             var security = new Security(
                 request.ExchangeHours,
                 config,
-                new Cash(CashBook.AccountCurrency, 0, 1m),
-                SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                new Cash(Currencies.NullCurrency, 0, 1m),
+                SymbolProperties.GetDefault(Currencies.NullCurrency),
                 ErrorCurrencyConverter.Instance
             );
             var mapFileResolver = config.SecurityType == SecurityType.Equity
                 ? _mapFileProvider.Get(config.Market)
                 : MapFileResolver.Empty;
+
+            if (config.SecurityType == SecurityType.Equity)
+            {
+                var mapFile = mapFileResolver.ResolveMapFile(config.Symbol.ID.Symbol, config.Symbol.ID.Date);
+                config.MappedSymbol = mapFile.GetMappedSymbol(start, config.MappedSymbol);
+            }
 
             var dataReader = new SubscriptionDataReader(config,
                 start,
@@ -122,13 +129,13 @@ namespace QuantConnect.Lean.Engine.HistoricalData
             dataReader.DownloadFailed += (sender, args) => { OnDownloadFailed(new DownloadFailedEventArgs(args.Message, args.StackTrace)); };
             dataReader.ReaderErrorDetected += (sender, args) => { OnReaderErrorDetected(new ReaderErrorDetectedEventArgs(args.Message, args.StackTrace)); };
 
-            var enumerator = CorporateEventEnumeratorFactory.CreateEnumerators(
+            var reader = CorporateEventEnumeratorFactory.CreateEnumerators(
+                dataReader,
                 config,
                 _factorFileProvider,
                 dataReader,
                 mapFileResolver,
                 false);
-            IEnumerator<BaseData> reader = new SynchronizingEnumerator(dataReader, enumerator);
 
             // has to be initialized after adding all the enumerators since it will execute a MoveNext
             dataReader.Initialize();

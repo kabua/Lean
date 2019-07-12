@@ -22,12 +22,10 @@ using QuantConnect.AlgorithmFactory;
 using QuantConnect.Brokerages.Backtesting;
 using QuantConnect.Configuration;
 using QuantConnect.Interfaces;
-using QuantConnect.Lean.Engine.RealTime;
-using QuantConnect.Lean.Engine.Results;
-using QuantConnect.Lean.Engine.TransactionHandlers;
 using QuantConnect.Logging;
 using QuantConnect.Packets;
 using QuantConnect.Lean.Engine.DataFeeds;
+using QuantConnect.Util;
 
 namespace QuantConnect.Lean.Engine.Setup
 {
@@ -36,6 +34,11 @@ namespace QuantConnect.Lean.Engine.Setup
     /// </summary>
     public class ConsoleSetupHandler : ISetupHandler
     {
+        /// <summary>
+        /// The worker thread instance the setup handler should use
+        /// </summary>
+        public WorkerThread WorkerThread { get; set; }
+
         /// <summary>
         /// Error which occured during setup may appear here.
         /// </summary>
@@ -87,7 +90,7 @@ namespace QuantConnect.Lean.Engine.Setup
 
             // don't force load times to be fast here since we're running locally, this allows us to debug
             // and step through some code that may take us longer than the default 10 seconds
-            var loader = new Loader(algorithmNodePacket.Language, TimeSpan.FromHours(1), names => names.SingleOrDefault(name => MatchTypeName(name, algorithmName)));
+            var loader = new Loader(algorithmNodePacket.Language, TimeSpan.FromHours(1), names => names.SingleOrDefault(name => MatchTypeName(name, algorithmName)), WorkerThread);
             var complete = loader.TryCreateAlgorithmInstanceWithIsolator(assemblyPath, algorithmNodePacket.RamAllocation, out algorithm, out error);
             if (!complete) throw new AlgorithmSetupException($"During the algorithm initialization, the following exception has occurred: {error}");
 
@@ -112,17 +115,13 @@ namespace QuantConnect.Lean.Engine.Setup
         /// <summary>
         /// Setup the algorithm cash, dates and portfolio as desired.
         /// </summary>
-        /// <param name="algorithm">Existing algorithm instance</param>
-        /// <param name="brokerage">New brokerage instance</param>
-        /// <param name="baseJob">Backtesting job</param>
-        /// <param name="resultHandler">The configured result handler</param>
-        /// <param name="transactionHandler">The configuration transaction handler</param>
-        /// <param name="realTimeHandler">The configured real time handler</param>
+        /// <param name="parameters">The parameters object to use</param>
         /// <returns>Boolean true on successfully setting up the console.</returns>
-        public bool Setup(IAlgorithm algorithm, IBrokerage brokerage, AlgorithmNodePacket baseJob, IResultHandler resultHandler, ITransactionHandler transactionHandler, IRealTimeHandler realTimeHandler)
+        public bool Setup(SetupHandlerParameters parameters)
         {
+            var algorithm = parameters.Algorithm;
+            var baseJob = parameters.AlgorithmNodePacket;
             var initializeComplete = false;
-
             try
             {
                 //Set common variables for console programs:
@@ -143,7 +142,7 @@ namespace QuantConnect.Lean.Engine.Setup
                     algorithm.SetAvailableDataTypes(GetConfiguredDataFeeds());
 
                     //Set the source impl for the event scheduling
-                    algorithm.Schedule.SetEventSchedule(realTimeHandler);
+                    algorithm.Schedule.SetEventSchedule(parameters.RealTimeHandler);
 
                     // set the option chain provider
                     algorithm.SetOptionChainProvider(new CachingOptionChainProvider(new BacktestingOptionChainProvider()));
@@ -151,8 +150,15 @@ namespace QuantConnect.Lean.Engine.Setup
                     // set the future chain provider
                     algorithm.SetFutureChainProvider(new CachingFutureChainProvider(new BacktestingFutureChainProvider()));
 
-                    //Setup Base Algorithm:
-                    algorithm.Initialize();
+                    var isolator = new Isolator();
+                    isolator.ExecuteWithTimeLimit(TimeSpan.FromMinutes(5),
+                        () =>
+                        {
+                            //Setup Base Algorithm:
+                            algorithm.Initialize();
+                        }, baseJob.Controls.RamAllocation,
+                        sleepIntervalMillis: 50,
+                        workerThread: WorkerThread);
 
                     //Finalize Initialization
                     algorithm.PostInitialize();
@@ -166,6 +172,8 @@ namespace QuantConnect.Lean.Engine.Setup
 
                     //Backtest Specific Parameters:
                     StartingDate = backtestJob.PeriodStart;
+
+                    BaseSetupHandler.SetupCurrencyConversions(algorithm, parameters.UniverseSelection);
                     StartingPortfolioValue = algorithm.Portfolio.Cash;
                 }
                 else

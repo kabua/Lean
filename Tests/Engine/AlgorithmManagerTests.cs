@@ -61,7 +61,8 @@ namespace QuantConnect.Tests.Engine
                     new SecurityService(algorithm.Portfolio.CashBook, marketHoursDatabase, symbolPropertiesDataBase, algorithm)),
                 algorithm,
                 algorithm.TimeKeeper,
-                marketHoursDatabase);
+                marketHoursDatabase,
+                false);
             algorithm.SubscriptionManager.SetDataManager(dataManager);
             var transactions = new BacktestingTransactionHandler();
             var results = new BacktestingResultHandler();
@@ -81,7 +82,7 @@ namespace QuantConnect.Tests.Engine
 
             Log.Trace("Starting algorithm manager loop to process " + nullSynchronizer.Count + " time slices");
             var sw = Stopwatch.StartNew();
-            algorithmManager.Run(job, algorithm, dataManager, nullSynchronizer, transactions, results, realtime, leanManager, alphas, token);
+            algorithmManager.Run(job, algorithm, nullSynchronizer, transactions, results, realtime, leanManager, alphas, token);
             sw.Stop();
 
             var thousands = nullSynchronizer.Count / 1000d;
@@ -306,6 +307,10 @@ namespace QuantConnect.Tests.Engine
             public void Exit()
             {
             }
+
+            public void OnSecuritiesChanged(SecurityChanges changes)
+            {
+            }
         }
 
         class NullTransactionHandler : ITransactionHandler
@@ -374,6 +379,8 @@ namespace QuantConnect.Tests.Engine
             {
                 throw new NotImplementedException();
             }
+
+            public event EventHandler<OrderEvent> NewOrderEvent;
         }
 
         class NullSynchronizer : ISynchronizer

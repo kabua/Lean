@@ -28,8 +28,8 @@ namespace QuantConnect.Data.Consolidators
         /// Initializes a new instance of the <see cref="TickQuoteBarConsolidator"/> class
         /// </summary>
         /// <param name="period">The minimum span of time before emitting a consolidated bar</param>
-        public TickQuoteBarConsolidator(TimeSpan period, TimeSpan? dailyStartTime = null)
-            : base(period, dailyStartTime)
+        public TickQuoteBarConsolidator(TimeSpan period, TimeSpan? firstBarStartTime = null)
+            : base(period, firstBarStartTime)
         {
         }
 
@@ -51,7 +51,16 @@ namespace QuantConnect.Data.Consolidators
             : base(maxCount, period)
         {
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TickQuoteBarConsolidator"/> class
+        /// </summary>
+        /// <param name="func">Func that defines the start time of a consolidated data</param>
+        public TickQuoteBarConsolidator(Func<DateTime, CalendarInfo> func)
+            : base(func)
+        {
+        }
+
         /// <summary>
         /// Determines whether or not the specified data should be processd
         /// </summary>

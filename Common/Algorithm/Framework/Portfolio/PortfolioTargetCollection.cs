@@ -101,6 +101,19 @@ namespace QuantConnect.Algorithm.Framework.Portfolio
         }
 
         /// <summary>
+        /// Adds the specified targets to the collection. If a target for the same symbol
+        /// already exists it will be overwritten.
+        /// </summary>
+        /// <param name="targets">The portfolio targets to add</param>
+        public void AddRange(IPortfolioTarget[] targets)
+        {
+            foreach (var item in targets)
+            {
+                _targets[item.Symbol] = item;
+            }
+        }
+
+        /// <summary>
         /// Removes all portfolio targets from this collection
         /// </summary>
         public void Clear()
@@ -316,8 +329,8 @@ namespace QuantConnect.Algorithm.Framework.Portfolio
                     PortfolioTarget = x,
                     TargetQuantity = x.Quantity,
                     ExistingQuantity = algorithm.Portfolio[x.Symbol].Quantity
-                                       + algorithm.Transactions.GetOpenOrders(o => o.Symbol == x.Symbol)
-                                           .Sum(o => o.Quantity),
+                                       + algorithm.Transactions.GetOpenOrderTickets(x.Symbol)
+                                           .Aggregate(0m, (d, t) => d + t.Quantity - t.QuantityFilled),
                     Price = algorithm.Securities[x.Symbol].Price
                 })
                 .Select(x => new {

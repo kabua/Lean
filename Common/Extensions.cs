@@ -40,6 +40,26 @@ namespace QuantConnect
     public static class Extensions
     {
         /// <summary>
+        /// Helper method that will cast the provided <see cref="PyObject"/>
+        /// to a T type and dispose of it.
+        /// </summary>
+        /// <typeparam name="T">The target type</typeparam>
+        /// <param name="instance">The <see cref="PyObject"/> instance to cast and dispose</param>
+        /// <returns>The instance of type T. Will return default value if
+        /// provided instance is null</returns>
+        public static T GetAndDispose<T>(this PyObject instance)
+        {
+            if (instance == null)
+            {
+                return default(T);
+            }
+            var returnInstance = instance.As<T>();
+            // will reduce ref count
+            instance.Dispose();
+            return returnInstance;
+        }
+
+        /// <summary>
         /// Extension to move one element from list from A to position B.
         /// </summary>
         /// <typeparam name="T">Type of list</typeparam>
@@ -127,6 +147,24 @@ namespace QuantConnect
         }
 
         /// <summary>
+        /// Lazy string to upper implementation.
+        /// Will first verify the string is not already upper and avoid
+        /// the call to <see cref="string.ToUpper()"/> if possible.
+        /// </summary>
+        /// <param name="data">The string to upper</param>
+        /// <returns>The upper string</returns>
+        public static string LazyToUpper(this string data)
+        {
+            // for performance only call to upper if required
+            var alreadyUpper = true;
+            for (int i = 0; i < data.Length && alreadyUpper; i++)
+            {
+                alreadyUpper = char.IsUpper(data[i]);
+            }
+            return alreadyUpper ? data : data.ToUpper();
+        }
+
+        /// <summary>
         /// Extension method to automatically set the update value to same as "add" value for TryAddUpdate.
         /// This makes the API similar for traditional and concurrent dictionaries.
         /// </summary>
@@ -204,6 +242,22 @@ namespace QuantConnect
         }
 
         /// <summary>
+        /// Will truncate the provided decimal, without rounding, to 3 decimal places
+        /// </summary>
+        /// <param name="value">The value to truncate</param>
+        /// <returns>New instance with just 3 decimal places</returns>
+        public static decimal TruncateTo3DecimalPlaces(this decimal value)
+        {
+            if (value == decimal.MaxValue
+                || value == decimal.MinValue
+                || value == 0)
+            {
+                return value;
+            }
+            return Math.Truncate(1000 * value) / 1000;
+        }
+
+        /// <summary>
         /// Provides global smart rounding, numbers larger than 1000 will round to 4 decimal places,
         /// while numbers smaller will round to 7 significant digits
         /// </summary>
@@ -230,15 +284,35 @@ namespace QuantConnect
         /// as a decimal, then the closest decimal value will be returned</returns>
         public static decimal SafeDecimalCast(this double input)
         {
+            if (input.IsNaNOrZero()) return 0;
             if (input <= (double) decimal.MinValue) return decimal.MinValue;
             if (input >= (double) decimal.MaxValue) return decimal.MaxValue;
             return (decimal) input;
         }
 
+        /// <summary>
+        /// Will remove any trailing zeros for the provided decimal input
+        /// </summary>
+        /// <param name="input">The <see cref="decimal"/> to remove trailing zeros from</param>
+        /// <returns>Provided input with no trailing zeros</returns>
+        /// <remarks>Will not have the expected behavior when called from Python,
+        /// since the returned <see cref="decimal"/> will be converted to python float,
+        /// <see cref="NormalizeToStr"/></remarks>
         public static decimal Normalize(this decimal input)
         {
             // http://stackoverflow.com/a/7983330/1582922
             return input / 1.000000000000000000000000000000000m;
+        }
+
+        /// <summary>
+        /// Will remove any trailing zeros for the provided decimal and convert to string.
+        /// Uses <see cref="Normalize"/>.
+        /// </summary>
+        /// <param name="input">The <see cref="decimal"/> to convert to <see cref="string"/></param>
+        /// <returns>Input converted to <see cref="string"/> with no trailing zeros</returns>
+        public static string NormalizeToStr(this decimal input)
+        {
+            return Normalize(input).ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -303,6 +377,9 @@ namespace QuantConnect
             int value = 0;
             for (var i = 0; i < str.Length; i++)
             {
+                if (str[i] == '.')
+                    break;
+
                 value = value * 10 + (str[i] - '0');
             }
             return value;
@@ -319,6 +396,9 @@ namespace QuantConnect
             long value = 0;
             for (var i = 0; i < str.Length; i++)
             {
+                if (str[i] == '.')
+                    break;
+
                 value = value * 10 + (str[i] - '0');
             }
             return value;
@@ -484,7 +564,13 @@ namespace QuantConnect
                 // divide by zero exception
                 return dateTime;
             }
-            return dateTime.AddTicks(-(dateTime.Ticks % interval.Ticks));
+
+            var amount = dateTime.Ticks % interval.Ticks;
+            if (amount > 0)
+            {
+                return dateTime.AddTicks(-amount);
+            }
+            return dateTime;
         }
 
         /// <summary>
@@ -964,6 +1050,86 @@ namespace QuantConnect
         }
 
         /// <summary>
+        /// Converts the specified <paramref name="securityType"/> value to its corresponding lower-case string representation
+        /// </summary>
+        /// <remarks>This method provides faster performance than <see cref="ToLower"/></remarks>
+        /// <param name="securityType">The SecurityType value</param>
+        /// <returns>A lower-case string representation of the specified SecurityType value</returns>
+        public static string SecurityTypeToLower(this SecurityType securityType)
+        {
+            switch (securityType)
+            {
+                case SecurityType.Base:
+                    return "base";
+                case SecurityType.Equity:
+                    return "equity";
+                case SecurityType.Option:
+                    return "option";
+                case SecurityType.Commodity:
+                    return "commodity";
+                case SecurityType.Forex:
+                    return "forex";
+                case SecurityType.Future:
+                    return "future";
+                case SecurityType.Cfd:
+                    return "cfd";
+                case SecurityType.Crypto:
+                    return "crypto";
+                default:
+                    // just in case
+                    return securityType.ToLower();
+            }
+        }
+
+        /// <summary>
+        /// Converts the specified <paramref name="tickType"/> value to its corresponding lower-case string representation
+        /// </summary>
+        /// <remarks>This method provides faster performance than <see cref="ToLower"/></remarks>
+        /// <param name="tickType">The tickType value</param>
+        /// <returns>A lower-case string representation of the specified tickType value</returns>
+        public static string TickTypeToLower(this TickType tickType)
+        {
+            switch (tickType)
+            {
+                case TickType.Trade:
+                    return "trade";
+                case TickType.Quote:
+                    return "quote";
+                case TickType.OpenInterest:
+                    return "openinterest";
+                default:
+                    // just in case
+                    return tickType.ToLower();
+            }
+        }
+
+        /// <summary>
+        /// Converts the specified <paramref name="resolution"/> value to its corresponding lower-case string representation
+        /// </summary>
+        /// <remarks>This method provides faster performance than <see cref="ToLower"/></remarks>
+        /// <param name="resolution">The resolution value</param>
+        /// <returns>A lower-case string representation of the specified resolution value</returns>
+        public static string ResolutionToLower(this Resolution resolution)
+        {
+            switch (resolution)
+            {
+                case Resolution.Tick:
+                    return "tick";
+                case Resolution.Second:
+                    return "second";
+                case Resolution.Minute:
+                    return "minute";
+                case Resolution.Hour:
+                    return "hour";
+                case Resolution.Daily:
+                    return "daily";
+                default:
+                    // just in case
+                    return resolution.ToLower();
+            }
+        }
+
+        /// <summary>
         /// Turn order into an order ticket
         /// </summary>
         /// <param name="order">The <see cref="Order"/> being converted</param>
@@ -1034,25 +1200,31 @@ namespace QuantConnect
         {
             using (Py.GIL())
             {
+                var value = "";
                 // PyObject objects that have the to_string method, like some pandas objects,
                 // can use this method to convert them into string objects
                 if (pyObject.HasAttr("to_string"))
                 {
-                    return Environment.NewLine + pyObject.InvokeMethod("to_string").ToString();
+                    var pyValue = pyObject.InvokeMethod("to_string");
+                    value = Environment.NewLine + pyValue;
+                    pyValue.Dispose();
                 }
-
-                var value = pyObject.ToString();
-                if (string.IsNullOrWhiteSpace(value))
+                else
                 {
-                    var pythonType = pyObject.GetPythonType();
-                    if (pythonType.GetType() == typeof(PyObject))
+                    value = pyObject.ToString();
+                    if (string.IsNullOrWhiteSpace(value))
                     {
-                        value = pythonType.ToString();
-                    }
-                    else
-                    {
-                        var type = pythonType.As<Type>();
-                        value = pyObject.AsManagedObject(type).ToString();
+                        var pythonType = pyObject.GetPythonType();
+                        if (pythonType.GetType() == typeof(PyObject))
+                        {
+                            value = pythonType.ToString();
+                        }
+                        else
+                        {
+                            var type = pythonType.As<Type>();
+                            value = pyObject.AsManagedObject(type).ToString();
+                        }
+                        pythonType.Dispose();
                     }
                 }
                 return value;
@@ -1099,6 +1271,7 @@ namespace QuantConnect
 
                     if (!type.IsAssignableFrom(csharpType))
                     {
+                        pythonType.Dispose();
                         return false;
                     }
 
@@ -1107,7 +1280,8 @@ namespace QuantConnect
                     // If the PyObject type and the managed object names are the same,
                     // pyObject is a C# object wrapped in PyObject, in this case return true
                     // Otherwise, pyObject is a python object that subclass a C# class.
-                    string name = ((dynamic) pythonType).__name__;
+                    var name = (((dynamic) pythonType).__name__ as PyObject).GetAndDispose<string>();
+                    pythonType.Dispose();
                     return name == result.GetType().Name;
                 }
                 catch
@@ -1144,12 +1318,12 @@ namespace QuantConnect
             }
 
             var code = string.Empty;
-            var locals = new PyDict();
             var types = type.GetGenericArguments();
 
-            try
+            using (Py.GIL())
             {
-                using (Py.GIL())
+                var locals = new PyDict();
+                try
                 {
                     for (var i = 0; i < types.Length; i++)
                     {
@@ -1164,14 +1338,15 @@ namespace QuantConnect
 
                     PythonEngine.Exec(code, null, locals.Handle);
                     result = (T)locals.GetItem("delegate").AsManagedObject(typeof(T));
-
+                    locals.Dispose();
                     return true;
                 }
-            }
-            catch
-            {
-                // Do not throw or log the exception.
-                // Return false as an exception means that the conversion could not be made.
+                catch
+                {
+                    // Do not throw or log the exception.
+                    // Return false as an exception means that the conversion could not be made.
+                }
+                locals.Dispose();
             }
             return false;
         }
@@ -1213,33 +1388,6 @@ namespace QuantConnect
                 using (Py.GIL())
                 {
                     throw new ArgumentException($"GetEnumString(): {pyObject.Repr()} is not a C# Type.");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Destroys a PyObject
-        /// https://docs.python.org/2/reference/datamodel.html#object.__del__
-        /// </summary>
-        /// <param name="pyObject">PyObject to be destroyed</param>
-        public static void Destroy(this PyObject pyObject)
-        {
-            try
-            {
-                if (pyObject.HasAttr("__del__"))
-                {
-                    pyObject.InvokeMethod("__del__");
-                }
-            }
-            catch (PythonException e)
-            {
-                if (string.IsNullOrWhiteSpace(e.StackTrace))
-                {
-                    throw new Exception($"{(pyObject as dynamic).__qualname__} returned a result with an undefined error set.");
-                }
-                else
-                {
-                    throw e;
                 }
             }
         }
@@ -1299,6 +1447,24 @@ namespace QuantConnect
         public static void SynchronouslyAwaitTask(this Task task)
         {
             task.ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Returns a new string in which specified ending in the current instance is removed.
+        /// </summary>
+        /// <param name="s">original string value</param>
+        /// <param name="ending">the string to be removed</param>
+        /// <returns></returns>
+        public static string RemoveFromEnd(this string s, string ending)
+        {
+            if (s.EndsWith(ending))
+            {
+                return s.Substring(0, s.Length - ending.Length);
+            }
+            else
+            {
+                return s;
+            }
         }
     }
 }
