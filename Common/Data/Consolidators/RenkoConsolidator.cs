@@ -14,7 +14,9 @@
 */
 
 using System;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.Market;
 
 namespace QuantConnect.Data.Consolidators
@@ -113,6 +115,7 @@ namespace QuantConnect.Data.Consolidators
             Type = RenkoType.Classic;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="RenkoConsolidator" /> class.
         /// </summary>
@@ -154,6 +157,7 @@ namespace QuantConnect.Data.Consolidators
                 _volumeSelector = (x => 0);
             }
         }
+#endif
 
         /// <summary>
         /// Gets the kind of the bar

@@ -19,7 +19,9 @@ using QuantConnect.Orders.Fees;
 using QuantConnect.Orders.Fills;
 using QuantConnect.Orders.Slippage;
 using QuantConnect.Orders.OptionExercise;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.Market;
 using QuantConnect.Interfaces;
 using QuantConnect.Util;
@@ -383,6 +385,7 @@ namespace QuantConnect.Securities.Option
             });
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the <see cref="ContractFilter"/> to a new universe selection function
         /// </summary>
@@ -392,6 +395,7 @@ namespace QuantConnect.Securities.Option
             var pyUniverseFunc = PythonUtil.ToFunc<OptionFilterUniverse, OptionFilterUniverse>(universeFunc);
             SetFilter(pyUniverseFunc);
         }
+#endif
 
         /// <summary>
         /// Sets the data normalization mode to be used by this security

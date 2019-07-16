@@ -15,7 +15,9 @@
 
 using System;
 using System.Collections.Generic;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Util;
@@ -44,6 +46,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             _alphaModels.AddRange(alphaModels);
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeAlphaModel"/> class
         /// </summary>
@@ -70,6 +73,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         {
 
         }
+#endif
 
         /// <summary>
         /// Updates this alpha model with the latest data from the algorithm.
@@ -120,6 +124,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             _alphaModels.Add(alphaModel);
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Adds a new <see cref="AlphaModel"/>
         /// </summary>
@@ -133,5 +138,6 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             }
             _alphaModels.Add(alphaModel);
         }
+#endif
     }
 }

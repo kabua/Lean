@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+#if SUPPORT_PY
 
 using Python.Runtime;
 using QuantConnect.Orders;
@@ -51,3 +52,4 @@ namespace QuantConnect.Python
         }
     }
 }
+#endif

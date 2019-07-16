@@ -47,6 +47,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
             return $"{nameof(BasePairsTradingAlphaModel)}({_lookback},{_resolution},1)";
         }
 
+#if SUPPORT_PY
         protected override IAlphaModel CreatePythonAlphaModel()
         {
             using (Py.GIL())
@@ -56,7 +57,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
                 return new AlphaModelPythonWrapper(instance);
             }
         }
-
+#endif
         protected override IEnumerable<Insight> ExpectedInsights()
         {
             Assert.Ignore("The CommonAlphaModelTests need to be refactored to support multiple securities with different prices for each security");

@@ -13,6 +13,7 @@
  * limitations under the License.
  *
 */
+#if SUPPORT_PY
 
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -50,3 +51,5 @@ namespace QuantConnect.Tests.Python
         }
     }
 }
+
+#endif

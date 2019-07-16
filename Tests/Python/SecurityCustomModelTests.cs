@@ -19,7 +19,9 @@ using Python.Runtime;
 using QuantConnect.Algorithm;
 using QuantConnect.Data;
 using QuantConnect.Data.Market;
+#if SUPPORT_PY
 using QuantConnect.Python;
+#endif
 using QuantConnect.Securities;
 using QuantConnect.Securities.Equity;
 using QuantConnect.Tests.Common.Securities;
@@ -50,8 +52,10 @@ namespace QuantConnect.Tests.Python
                 ? CreateCustomBuyingPowerModelFromSecurityMarginModelCode()
                 : CreateCustomBuyingPowerModelCode();
 
+#if SUPPORT_PY
             spy.SetBuyingPowerModel(CreateCustomBuyingPowerModel(code));
             Assert.IsAssignableFrom<BuyingPowerModelPythonWrapper>(spy.MarginModel);
+#endif
             Assert.AreEqual(1, spy.MarginModel.GetLeverage(spy));
 
             spy.SetLeverage(2);
@@ -69,8 +73,10 @@ namespace QuantConnect.Tests.Python
             // Renaming GetBuyingPower will cause a NotImplementedException exception
             var code = CreateCustomBuyingPowerModelCode();
             code = code.Replace("GetBuyingPower", "SetBuyingPower");
+#if SUPPORT_PY
             var pyObject = CreateCustomBuyingPowerModel(code);
             Assert.Throws<NotImplementedException>(() => spy.SetBuyingPowerModel(pyObject));
+#endif
         }
 
         private PyObject CreateCustomBuyingPowerModel(string code)

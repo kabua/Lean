@@ -158,9 +158,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
-        <AutoGen>True</AutoGen>
-        <DesignTimeSharedInput>True</DesignTimeSharedInput>
-        <DependentUpon>Settings.settings</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -204,10 +204,6 @@
       <Project>{2545c0b4-fabb-49c9-8dd1-9ad7ee23f86b}</Project>
       <Name>QuantConnect</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Jupyter\QuantConnect.Jupyter.csproj">
-      <Project>{9561d14a-467e-40ad-928e-ee9f758d7d98}</Project>
-      <Name>QuantConnect.Jupyter</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Logging\QuantConnect.Logging.csproj">
       <Project>{01911409-86be-4e7d-9947-df714138610d}</Project>
       <Name>QuantConnect.Logging</Name>
@@ -235,10 +231,10 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-      <None Include="Properties\Settings.settings">
-          <Generator>SettingsSingleFileGenerator</Generator>
-          <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-      </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Python.Runtime.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

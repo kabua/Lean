@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+#if SUPPORT_PY
 
 using QuantConnect.Data;
 using QuantConnect.Data.Consolidators;
@@ -1047,3 +1048,5 @@ namespace QuantConnect.Algorithm
         }
     }
 }
+
+#endif

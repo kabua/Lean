@@ -14,8 +14,10 @@
  *
 */
 
+#if SUPPORT_PY
+
 using Python.Runtime;
-using QuantConnect.Data.Fundamental;
+QuantConnect.Data.Fundamental;
 using QuantConnect.Data.UniverseSelection;
 using System;
 using System.Collections.Generic;
@@ -49,7 +51,6 @@ namespace QuantConnect.Util
                 return method(pyObject, typeof(T1)).AsManagedObject(typeof(Action<T1>));
             }
         }
-
         /// <summary>
         /// Encapsulates a python method with a <see cref="System.Action{T1, T2}"/>
         /// </summary>
@@ -70,7 +71,6 @@ namespace QuantConnect.Util
                 return method(pyObject, typeof(T1), typeof(T2)).AsManagedObject(typeof(Action<T1, T2>));
             }
         }
-
         /// <summary>
         /// Encapsulates a python method with a <see cref="System.Func{T1, T2}"/>
         /// </summary>
@@ -230,3 +230,5 @@ namespace QuantConnect.Util
         }
     }
 }
+
+#endif

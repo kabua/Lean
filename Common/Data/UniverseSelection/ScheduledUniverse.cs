@@ -14,7 +14,9 @@
 */
 
 using NodaTime;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.Market;
 using QuantConnect.Scheduling;
 using QuantConnect.Securities;
@@ -68,6 +70,7 @@ namespace QuantConnect.Data.UniverseSelection
         {
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledUniverse"/> class
         /// </summary>
@@ -100,7 +103,7 @@ namespace QuantConnect.Data.UniverseSelection
             : this(TimeZones.NewYork, dateRule, timeRule, selector, settings, securityInitializer)
         {
         }
-
+#endif
         /// <summary>
         /// Performs universe selection using the data specified
         /// </summary>

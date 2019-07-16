@@ -16,7 +16,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Util;
 
@@ -45,6 +47,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
             _universeSelectionModels.AddRange(universeSelectionModels);
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeUniverseSelectionModel"/> class
         /// </summary>
@@ -71,6 +74,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
         {
 
         }
+#endif
 
         /// <summary>
         /// Adds a new <see cref="IUniverseSelectionModel"/>
@@ -81,6 +85,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
             _universeSelectionModels.Add(universeSelectionModel);
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Adds a new <see cref="IUniverseSelectionModel"/>
         /// </summary>
@@ -94,7 +99,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
             }
             _universeSelectionModels.Add(selectionModel);
         }
-
+#endif
         /// <summary>
         /// Gets the next time the framework should invoke the `CreateUniverses` method to refresh the set of universes.
         /// </summary>

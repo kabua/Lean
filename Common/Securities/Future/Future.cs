@@ -18,7 +18,9 @@ using QuantConnect.Data;
 using QuantConnect.Orders.Fees;
 using QuantConnect.Orders.Fills;
 using QuantConnect.Orders.Slippage;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Util;
 
 namespace QuantConnect.Securities.Future
@@ -180,6 +182,7 @@ namespace QuantConnect.Securities.Future
             ContractFilter = new FuncSecurityDerivativeFilter(func);
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the <see cref="ContractFilter"/> to a new universe selection function
         /// </summary>
@@ -189,5 +192,6 @@ namespace QuantConnect.Securities.Future
             var pyUniverseFunc = PythonUtil.ToFunc<FutureFilterUniverse, FutureFilterUniverse>(universeFunc);
             SetFilter(pyUniverseFunc);
         }
+#endif
     }
 }

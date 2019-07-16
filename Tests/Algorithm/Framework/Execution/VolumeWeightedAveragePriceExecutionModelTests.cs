@@ -48,7 +48,9 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
                 .Callback((SubmitOrderRequest request) => actualOrdersSubmitted.Add(request));
 
             var algorithm = new QCAlgorithm();
+#if SUPPORT_PY
             algorithm.SetPandasConverter();
+#endif
             algorithm.Transactions.SetOrderProcessor(orderProcessor.Object);
 
             var model = GetExecutionModel(language);
@@ -100,7 +102,9 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
 
             var algorithm = new QCAlgorithm();
             algorithm.SubscriptionManager.SetDataManager(new DataManagerStub(algorithm));
+#if SUPPORT_PY
             algorithm.SetPandasConverter();
+#endif
             algorithm.SetHistoryProvider(historyProvider.Object);
             algorithm.SetDateTime(time.AddMinutes(5));
 
@@ -142,6 +146,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
 
         private static IExecutionModel GetExecutionModel(Language language)
         {
+#if SUPPORT_PY
             if (language == Language.Python)
             {
                 using (Py.GIL())
@@ -151,7 +156,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
                     return new ExecutionModelPythonWrapper(instance);
                 }
             }
-
+#endif
             return new VolumeWeightedAveragePriceExecutionModel();
         }
     }

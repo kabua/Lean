@@ -15,7 +15,9 @@
 
 using System;
 using System.Collections.Generic;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.Fundamental;
 using QuantConnect.Securities;
 
@@ -42,6 +44,7 @@ namespace QuantConnect.Data.UniverseSelection
             FineFundamentalUniverse = new FineFundamentalUniverse(universe.UniverseSettings, universe.SecurityInitializer, fineSelector);
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="FineFundamentalFilteredUniverse"/> class
         /// </summary>
@@ -53,7 +56,7 @@ namespace QuantConnect.Data.UniverseSelection
             var func = fineSelector.ConvertToDelegate<Func< IEnumerable<FineFundamental>, Symbol[]>>();
             FineFundamentalUniverse = new FineFundamentalUniverse(universe.UniverseSettings, universe.SecurityInitializer, func);
         }
-
+#endif
         /// <summary>
         /// Sets the security initializer, used to initialize/configure securities after creation
         /// </summary>

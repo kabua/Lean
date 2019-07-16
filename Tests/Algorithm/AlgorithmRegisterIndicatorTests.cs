@@ -85,6 +85,7 @@ namespace QuantConnect.Tests.Algorithm
             }
         }
 
+#if SUPPORT_PY
         [Test]
         public void PlotAndRegistersIndicatorProperlyPython()
         {
@@ -183,5 +184,6 @@ algo.RegisterIndicator(forex.Symbol, indicator, Resolution.Daily)";
                 Assert.DoesNotThrow(() => PythonEngine.ModuleFromString("RegistersIndicatorProperlyPythonScript", code));
             }
         }
+#endif
     }
 }

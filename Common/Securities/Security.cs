@@ -25,8 +25,10 @@ using QuantConnect.Securities.Equity;
 using QuantConnect.Securities.Forex;
 using QuantConnect.Securities.Interfaces;
 using QuantConnect.Data.Market;
+#if SUPPORT_PY
 using QuantConnect.Python;
 using Python.Runtime;
+#endif
 using QuantConnect.Data.Fundamental;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Interfaces;
@@ -636,6 +638,7 @@ namespace QuantConnect.Securities
             FeeModel = feelModel;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the fee model
         /// </summary>
@@ -644,7 +647,7 @@ namespace QuantConnect.Securities
         {
             FeeModel = new FeeModelPythonWrapper(feelModel);
         }
-
+#endif
         /// <summary>
         /// Sets the fill model
         /// </summary>
@@ -654,6 +657,7 @@ namespace QuantConnect.Securities
             FillModel = fillModel;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the fill model
         /// </summary>
@@ -662,7 +666,7 @@ namespace QuantConnect.Securities
         {
             FillModel = new FillModelPythonWrapper(fillModel);
         }
-
+#endif
         /// <summary>
         /// Sets the slippage model
         /// </summary>
@@ -672,6 +676,7 @@ namespace QuantConnect.Securities
             SlippageModel = slippageModel;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the slippage model
         /// </summary>
@@ -680,7 +685,7 @@ namespace QuantConnect.Securities
         {
             SlippageModel = new SlippageModelPythonWrapper(slippageModel);
         }
-
+#endif
         /// <summary>
         /// Sets the volatility model
         /// </summary>
@@ -690,6 +695,7 @@ namespace QuantConnect.Securities
             VolatilityModel = volatilityModel;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the volatility model
         /// </summary>
@@ -698,6 +704,7 @@ namespace QuantConnect.Securities
         {
             VolatilityModel = new VolatilityModelPythonWrapper(volatilityModel);
         }
+#endif
 
         /// <summary>
         /// Sets the buying power model
@@ -708,6 +715,7 @@ namespace QuantConnect.Securities
             BuyingPowerModel = buyingPowerModel;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the buying power model
         /// </summary>
@@ -716,6 +724,7 @@ namespace QuantConnect.Securities
         {
             SetBuyingPowerModel(new BuyingPowerModelPythonWrapper(pyObject));
         }
+#endif
 
         /// <summary>
         /// Sets the margin model
@@ -726,6 +735,7 @@ namespace QuantConnect.Securities
             MarginModel = marginModel;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the margin model
         /// </summary>
@@ -734,6 +744,7 @@ namespace QuantConnect.Securities
         {
             SetMarginModel(new BuyingPowerModelPythonWrapper(pyObject));
         }
+#endif
 
         /// <summary>
         /// Returns a string that represents the current object.

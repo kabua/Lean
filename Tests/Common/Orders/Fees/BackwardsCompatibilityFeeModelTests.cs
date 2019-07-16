@@ -18,7 +18,9 @@ using NUnit.Framework;
 using Python.Runtime;
 using QuantConnect.Orders;
 using QuantConnect.Orders.Fees;
+#if SUPPORT_PY
 using QuantConnect.Python;
+#endif
 using QuantConnect.Securities;
 using QuantConnect.Tests.Common.Securities;
 
@@ -40,8 +42,9 @@ namespace QuantConnect.Tests.Common.Orders.Fees
             var timeKeeper = new TimeKeeper(referenceUtc);
             _security.SetLocalTimeKeeper(timeKeeper.GetLocalTimeKeeper(TimeZones.NewYork));
         }
+#if SUPPORT_PY
 
-        #region Python
+#region Python
 
         [Test]
         public void OldFeeModelModel_GetOrderFee_Py()
@@ -108,6 +111,8 @@ namespace QuantConnect.Tests.Common.Orders.Fees
                 Assert.AreEqual(Currencies.USD, result.Value.Currency);
             }
         }
-        #endregion
+#endregion
+
+#endif
     }
 }

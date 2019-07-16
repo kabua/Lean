@@ -13,6 +13,7 @@
  * limitations under the License.
  *
 */
+#if SUPPORT_PY
 
 using System;
 using System.Collections.Generic;
@@ -58,3 +59,4 @@ namespace QuantConnect.Python
         }
     }
 }
+#endif

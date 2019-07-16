@@ -27,7 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using QuantConnect.Algorithm;
+#if SUPPORT_PY
 using QuantConnect.Python;
+#endif
 using QuantConnect.Tests.Engine.DataFeeds;
 
 namespace QuantConnect.Tests.Algorithm.Framework.Alphas
@@ -42,8 +44,9 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
         [TestFixtureSetUp]
         public void Initialize()
         {
+#if SUPPORT_PY
             PythonInitializer.Initialize();
-
+#endif
             _algorithm = new QCAlgorithm();
             _algorithm.PortfolioConstruction = new NullPortfolioConstructionModel();
             _algorithm.HistoryProvider = new SineHistoryProvider(_algorithm.Securities);
@@ -236,11 +239,12 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
         /// </summary>
         protected abstract IAlphaModel CreateCSharpAlphaModel();
 
+#if SUPPORT_PY
         /// <summary>
         /// Returns a new instance of the alpha model to test
         /// </summary>
         protected abstract IAlphaModel CreatePythonAlphaModel();
-
+#endif
         /// <summary>
         /// Returns an enumerable with the expected insights
         /// </summary>
@@ -362,10 +366,12 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
                 case Language.CSharp:
                     model = CreateCSharpAlphaModel();
                     return true;
+#if SUPPORT_PY
                 case Language.Python:
                     _algorithm.SetPandasConverter();
                     model = CreatePythonAlphaModel();
                     return true;
+#endif
                 default:
                     return false;
             }

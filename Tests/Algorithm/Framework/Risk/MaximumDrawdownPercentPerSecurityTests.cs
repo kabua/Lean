@@ -62,9 +62,12 @@ namespace QuantConnect.Tests.Algorithm.Framework.Risk
             security.Object.Holdings = holding.Object;
 
             var algorithm = new QCAlgorithm();
+#if SUPPORT_PY
             algorithm.SetPandasConverter();
+#endif
             algorithm.Securities.Add(Symbols.AAPL, security.Object);
 
+#if SUPPORT_PY
             if (language == Language.Python)
             {
                 using (Py.GIL())
@@ -76,6 +79,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Risk
                 }
             }
             else
+#endif
             {
                 var model = new MaximumDrawdownPercentPerSecurity(maxDrawdownPercent);
                 algorithm.SetRiskManagement(model);

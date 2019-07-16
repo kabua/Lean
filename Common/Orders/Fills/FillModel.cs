@@ -17,7 +17,9 @@ using System;
 using System.Linq;
 using QuantConnect.Data;
 using QuantConnect.Data.Market;
+#if SUPPORT_PY
 using QuantConnect.Python;
+#endif
 using QuantConnect.Orders.Fees;
 using QuantConnect.Securities;
 
@@ -33,6 +35,7 @@ namespace QuantConnect.Orders.Fills
         /// </summary>
         protected FillModelParameters Parameters { get; set; }
 
+#if SUPPORT_PY
         /// <summary>
         /// This is required due to a limitation in PythonNet to resolved overriden methods
         /// </summary>
@@ -45,7 +48,7 @@ namespace QuantConnect.Orders.Fills
         {
             PythonWrapper = pythonWrapper;
         }
-
+#endif
         /// <summary>
         /// Return an order event with the fill details
         /// </summary>
@@ -62,34 +65,58 @@ namespace QuantConnect.Orders.Fills
             switch (order.Type)
             {
                 case OrderType.Market:
-                    orderEvent = PythonWrapper != null
+                    orderEvent =
+#if SUPPORT_PY
+                        PythonWrapper != null
                         ? PythonWrapper.MarketFill(parameters.Security, parameters.Order as MarketOrder)
-                        : MarketFill(parameters.Security, parameters.Order as MarketOrder);
+                        : 
+#endif
+                        MarketFill(parameters.Security, parameters.Order as MarketOrder);
                     break;
                 case OrderType.Limit:
-                    orderEvent = PythonWrapper != null
+                    orderEvent =
+#if SUPPORT_PY
+                        PythonWrapper != null
                         ? PythonWrapper.LimitFill(parameters.Security, parameters.Order as LimitOrder)
-                        : LimitFill(parameters.Security, parameters.Order as LimitOrder);
+                        : 
+#endif
+                        LimitFill(parameters.Security, parameters.Order as LimitOrder);
                     break;
                 case OrderType.StopMarket:
-                    orderEvent = PythonWrapper != null
+                    orderEvent =
+#if SUPPORT_PY
+                        PythonWrapper != null
                         ? PythonWrapper.StopMarketFill(parameters.Security, parameters.Order as StopMarketOrder)
-                        : StopMarketFill(parameters.Security, parameters.Order as StopMarketOrder);
+                        : 
+#endif
+                    StopMarketFill(parameters.Security, parameters.Order as StopMarketOrder);
                     break;
                 case OrderType.StopLimit:
-                    orderEvent = PythonWrapper != null
+                    orderEvent =
+#if SUPPORT_PY
+                        PythonWrapper != null
                         ? PythonWrapper.StopLimitFill(parameters.Security, parameters.Order as StopLimitOrder)
-                        : StopLimitFill(parameters.Security, parameters.Order as StopLimitOrder);
+                        : 
+#endif
+                        StopLimitFill(parameters.Security, parameters.Order as StopLimitOrder);
                     break;
                 case OrderType.MarketOnOpen:
-                    orderEvent = PythonWrapper != null
+                    orderEvent =
+#if SUPPORT_PY
+                        PythonWrapper != null
                         ? PythonWrapper.MarketOnOpenFill(parameters.Security, parameters.Order as MarketOnOpenOrder)
-                        : MarketOnOpenFill(parameters.Security, parameters.Order as MarketOnOpenOrder);
+                        : 
+#endif
+                        MarketOnOpenFill(parameters.Security, parameters.Order as MarketOnOpenOrder);
                     break;
                 case OrderType.MarketOnClose:
-                    orderEvent = PythonWrapper != null
+                    orderEvent =
+#if SUPPORT_PY
+                        PythonWrapper != null
                         ? PythonWrapper.MarketOnCloseFill(parameters.Security, parameters.Order as MarketOnCloseOrder)
-                        : MarketOnCloseFill(parameters.Security, parameters.Order as MarketOnCloseOrder);
+                        : 
+#endif
+                        MarketOnCloseFill(parameters.Security, parameters.Order as MarketOnCloseOrder);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -464,10 +491,12 @@ namespace QuantConnect.Orders.Fills
         /// </summary>
         private Prices GetPricesCheckingPythonWrapper(Security asset, OrderDirection direction)
         {
+#if SUPPORT_PY
             if (PythonWrapper != null)
             {
                 return PythonWrapper.GetPrices(asset, direction);
             }
+#endif
             return GetPrices(asset, direction);
         }
 

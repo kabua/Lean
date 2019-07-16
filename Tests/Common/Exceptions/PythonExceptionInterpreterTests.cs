@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+#if SUPPORT_PY
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -86,3 +87,5 @@ namespace QuantConnect.Tests.Common.Exceptions
         private Exception CreateExceptionFromType(Type type) => type == typeof(PythonException) ? _pythonException : (Exception)Activator.CreateInstance(type);
     }
 }
+
+#endif

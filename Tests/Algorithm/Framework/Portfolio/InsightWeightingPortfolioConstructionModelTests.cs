@@ -378,6 +378,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Portfolio
         private void SetPortfolioConstruction(Language language, QCAlgorithm algorithm)
         {
             algorithm.SetPortfolioConstruction(new InsightWeightingPortfolioConstructionModel());
+#if SUPPORT_PY
             if (language == Language.Python)
             {
                 using (Py.GIL())
@@ -388,7 +389,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Portfolio
                     algorithm.SetPortfolioConstruction(model);
                 }
             }
-
+#endif
             foreach (var kvp in _algorithm.Portfolio)
             {
                 kvp.Value.SetHoldings(kvp.Value.Price, 0);

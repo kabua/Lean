@@ -16,7 +16,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Securities;
 
 namespace QuantConnect.Data.UniverseSelection
@@ -46,7 +48,8 @@ namespace QuantConnect.Data.UniverseSelection
             _universeSettings = universeSettings;
             _selector = selector;
         }
-        
+
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="CoarseFundamentalUniverse"/> class
         /// </summary>
@@ -63,6 +66,7 @@ namespace QuantConnect.Data.UniverseSelection
                 _selector = func;
             }
         }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CoarseFundamentalUniverse"/> class
@@ -78,6 +82,7 @@ namespace QuantConnect.Data.UniverseSelection
             _selector = selector;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="CoarseFundamentalUniverse"/> class
         /// </summary>
@@ -95,6 +100,7 @@ namespace QuantConnect.Data.UniverseSelection
                 _selector = func;
             }
         }
+#endif
 
         /// <summary>
         /// Performs universe selection using the data specified

@@ -53,6 +53,7 @@ namespace QuantConnect.Tests.Algorithm
             Assert.IsNotEmpty(content);
         }
 
+#if SUPPORT_PY
         [Test]
         public void Download_With_Python_Parameter_Successfully()
         {
@@ -72,5 +73,6 @@ namespace QuantConnect.Tests.Algorithm
             Assert.DoesNotThrow(() => content = algo.Download("https://www.quantconnect.com/", headers));
             Assert.IsNotEmpty(content);
         }
+#endif
     }
 }

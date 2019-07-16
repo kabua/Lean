@@ -13,6 +13,7 @@
  * limitations under the License.
  *
 */
+#if SUPPORT_PY
 
 using NUnit.Framework;
 using Python.Runtime;
@@ -150,3 +151,5 @@ class CustomMarginCallModel(DefaultMarginCallModel):
         return SubmitOrderRequest(OrderType.Market, security.Type, security.Symbol, quantity, 0, 0, time, 'Margin Call', None)";
     }
 }
+
+#endif

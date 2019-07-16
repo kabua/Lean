@@ -26,6 +26,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
     {
         protected override IAlphaModel CreateCSharpAlphaModel() => new RsiAlphaModel();
 
+#if SUPPORT_PY
         protected override IAlphaModel CreatePythonAlphaModel()
         {
             using (Py.GIL())
@@ -35,6 +36,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
                 return new AlphaModelPythonWrapper(instance);
             }
         }
+#endif
 
         protected override IEnumerable<Insight> ExpectedInsights()
         {

@@ -48,7 +48,9 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
                 .Callback((SubmitOrderRequest request) => actualOrdersSubmitted.Add(request));
 
             var algorithm = new QCAlgorithm();
+#if SUPPORT_PY
             algorithm.SetPandasConverter();
+#endif
             algorithm.SubscriptionManager.SetDataManager(new DataManagerStub(algorithm));
             algorithm.Transactions.SetOrderProcessor(orderProcessor.Object);
 
@@ -96,7 +98,9 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
                         })));
 
             var algorithm = new QCAlgorithm();
+#if SUPPORT_PY
             algorithm.SetPandasConverter();
+#endif
             algorithm.SetHistoryProvider(historyProvider.Object);
             algorithm.SubscriptionManager.SetDataManager(new DataManagerStub(algorithm));
             algorithm.SetDateTime(time.AddMinutes(5));
@@ -165,7 +169,9 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
                 .Returns(historicalPrices.Select((x, i) => new Slice(time.AddMinutes(i), new List<BaseData> { func(x, i) })));
 
             var algorithm = new QCAlgorithm();
+#if SUPPORT_PY
             algorithm.SetPandasConverter();
+#endif
             algorithm.SetHistoryProvider(historyProvider.Object);
             algorithm.SubscriptionManager.SetDataManager(new DataManagerStub(algorithm));
             algorithm.SetDateTime(time.AddMinutes(5));
@@ -186,6 +192,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
             const int period = 2;
             const decimal deviations = 1.5m;
 
+#if SUPPORT_PY
             if (language == Language.Python)
             {
                 using (Py.GIL())
@@ -195,7 +202,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Execution
                     return new ExecutionModelPythonWrapper(instance);
                 }
             }
-
+#endif
             return new StandardDeviationExecutionModel(period, deviations);
         }
     }

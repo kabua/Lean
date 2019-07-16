@@ -16,7 +16,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Algorithm.Framework.Portfolio;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Util;
@@ -62,6 +64,7 @@ namespace QuantConnect.Algorithm.Framework.Risk
             }
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeRiskManagementModel"/> class
         /// </summary>
@@ -88,7 +91,7 @@ namespace QuantConnect.Algorithm.Framework.Risk
         {
 
         }
-
+#endif
         /// <summary>
         /// Manages the algorithm's risk at each time step.
         /// This method patches this call through the each of the wrapped models.
@@ -133,6 +136,7 @@ namespace QuantConnect.Algorithm.Framework.Risk
             _riskManagementModels.Add(riskManagementModel);
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Adds a new <see cref="IRiskManagementModel"/> instance
         /// </summary>
@@ -146,5 +150,6 @@ namespace QuantConnect.Algorithm.Framework.Risk
             }
             _riskManagementModels.Add(riskManagementModel);
         }
+#endif
     }
 }

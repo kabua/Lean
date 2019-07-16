@@ -545,6 +545,7 @@ namespace QuantConnect.Tests.Common.Util
             Assert.AreNotEqual(expected, actual);
         }
 
+#if SUPPORT_PY
         [Test]
         public void PyObjectTryConvertQuoteBar()
         {
@@ -733,7 +734,7 @@ namespace QuantConnect.Tests.Common.Util
                 Assert.Throws<ArgumentException>(() => pyObject.TryConvertToDelegate(out action));
             }
         }
-
+#endif
         [Test]
         public void BatchByDoesNotDropItems()
         {

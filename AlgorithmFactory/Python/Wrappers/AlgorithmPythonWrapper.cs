@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+#if SUPPORT_PY
 
 using NodaTime;
 using Python.Runtime;
@@ -905,3 +906,5 @@ namespace QuantConnect.AlgorithmFactory.Python.Wrappers
             => _baseAlgorithm.SetOrderEventProvider(newOrderEvent);
     }
 }
+
+#endif

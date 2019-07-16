@@ -33,6 +33,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
 
         protected override IAlphaModel CreateCSharpAlphaModel() => new ConstantAlphaModel(_type, _direction, _period, _magnitude, _confidence);
 
+#if SUPPORT_PY
         protected override IAlphaModel CreatePythonAlphaModel()
         {
             using (Py.GIL())
@@ -42,6 +43,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Alphas
                 return new AlphaModelPythonWrapper(instance);
             }
         }
+#endif
 
         protected override IEnumerable<Insight> ExpectedInsights()
         {

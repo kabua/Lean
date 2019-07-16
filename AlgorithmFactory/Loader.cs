@@ -22,8 +22,10 @@ using System.Runtime.InteropServices;
 using System.Security.Policy;
 using QuantConnect.Interfaces;
 using QuantConnect.Logging;
+#if SUPPORT_PY
 using QuantConnect.AlgorithmFactory.Python.Wrappers;
 using QuantConnect.Python;
+#endif
 using QuantConnect.Util;
 
 namespace QuantConnect.AlgorithmFactory
@@ -124,10 +126,11 @@ namespace QuantConnect.AlgorithmFactory
 
             switch (_language)
             {
+#if SUPPORT_PY
                 case Language.Python:
                     TryCreatePythonAlgorithm(assemblyPath, out algorithmInstance, out errorMessage);
                     break;
-
+#endif
                 default:
                     TryCreateILAlgorithm(assemblyPath, out algorithmInstance, out errorMessage);
                     break;
@@ -137,6 +140,7 @@ namespace QuantConnect.AlgorithmFactory
             return algorithmInstance != null;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Create a new instance of a python algorithm
         /// </summary>
@@ -192,6 +196,7 @@ namespace QuantConnect.AlgorithmFactory
             //Successful load.
             return true;
         }
+#endif
 
         /// <summary>
         /// Create a generic IL algorithm

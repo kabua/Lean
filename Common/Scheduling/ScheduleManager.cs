@@ -20,7 +20,9 @@ using NodaTime;
 using QuantConnect.Securities;
 using QuantConnect.Logging;
 using System.Linq;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 
 namespace QuantConnect.Scheduling
 {
@@ -132,6 +134,7 @@ namespace QuantConnect.Scheduling
             return On(dateRule, timeRule, (name, time) => callback());
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Schedules the callback to run using the specified date and time rules
         /// </summary>
@@ -142,6 +145,7 @@ namespace QuantConnect.Scheduling
         {
             return On(dateRule, timeRule, (name, time) => { using (Py.GIL()) callback.Invoke(); });
         }
+#endif
 
         /// <summary>
         /// Schedules the callback to run using the specified date and time rules
@@ -167,6 +171,7 @@ namespace QuantConnect.Scheduling
             return On(name, dateRule, timeRule, (n, d) => callback());
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Schedules the callback to run using the specified date and time rules
         /// </summary>
@@ -178,6 +183,7 @@ namespace QuantConnect.Scheduling
         {
             return On(name, dateRule, timeRule, (n, d) => { using (Py.GIL()) callback.Invoke(); });
         }
+#endif
 
         /// <summary>
         /// Schedules the callback to run using the specified date and time rules
@@ -212,7 +218,7 @@ namespace QuantConnect.Scheduling
             return scheduledEvent;
         }
 
-        #region Fluent Scheduling
+#region Fluent Scheduling
 
         /// <summary>
         /// Entry point for the fluent scheduled event builder
@@ -230,6 +236,6 @@ namespace QuantConnect.Scheduling
             return new FluentScheduledEventBuilder(this, _securities, name);
         }
 
-        #endregion
+#endregion
     }
 }

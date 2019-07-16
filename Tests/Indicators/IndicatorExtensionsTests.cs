@@ -404,6 +404,7 @@ namespace QuantConnect.Tests.Indicators
             indicatorB1.Of(indicatorB2);
         }
 
+#if SUPPORT_PY
         [Test]
         public void MinusSubtractsLeftAndConstant_Py()
         {
@@ -539,6 +540,7 @@ namespace QuantConnect.Tests.Indicators
                 Assert.AreEqual(0, composite.Current.Value);
             }
         }
+#endif
 
         private class TestIndicatorA : IndicatorBase<IBaseData>
         {

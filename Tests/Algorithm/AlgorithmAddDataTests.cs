@@ -20,7 +20,9 @@ using Newtonsoft.Json;
 using NodaTime;
 using NUnit.Framework;
 using QuantConnect.Algorithm;
+#if SUPPORT_PY
 using QuantConnect.AlgorithmFactory.Python.Wrappers;
+#endif
 using QuantConnect.Configuration;
 using QuantConnect.Data;
 using QuantConnect.Data.Auxiliary;
@@ -171,6 +173,7 @@ namespace QuantConnect.Tests.Algorithm
             Assert.AreEqual(data.Price, 2);
         }
 
+#if SUPPORT_PY
         [Test]
         public void PythonCustomDataTypes_AreAddedToSubscriptions_Successfully()
         {
@@ -212,7 +215,7 @@ namespace QuantConnect.Tests.Algorithm
             var quandlConsolidator = new DynamicDataConsolidator(TimeSpan.FromDays(2));
             Assert.DoesNotThrow(() => qcAlgorithm.SubscriptionManager.AddConsolidator("SCF/CME_CL1_ON", quandlConsolidator));
         }
-
+#endif
         private static SubscriptionDataConfig GetMatchingSubscription(Security security, Type type)
         {
             // find a subscription matchin the requested type with a higher resolution than requested

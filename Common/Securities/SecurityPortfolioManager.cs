@@ -18,12 +18,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.Market;
 using QuantConnect.Interfaces;
 using QuantConnect.Logging;
 using QuantConnect.Orders;
+#if SUPPORT_PY
 using QuantConnect.Python;
+#endif
 
 namespace QuantConnect.Securities
 {
@@ -93,7 +97,7 @@ namespace QuantConnect.Securities
             UnsettledCashBook.Updated += (sender, args) => InvalidateTotalPortfolioValue();
         }
 
-        #region IDictionary Implementation
+#region IDictionary Implementation
 
         /// <summary>
         /// Add a new securities string-security to the portfolio.
@@ -260,7 +264,7 @@ namespace QuantConnect.Securities
             return Securities.Select(x => new KeyValuePair<Symbol, SecurityHolding>(x.Key, x.Value.Holdings)).GetEnumerator();
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         /// Sum of all currencies in account in US dollars (only settled cash)
@@ -819,6 +823,7 @@ namespace QuantConnect.Securities
             MarginCallModel = marginCallModel;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Sets the margin call model
         /// </summary>
@@ -827,5 +832,6 @@ namespace QuantConnect.Securities
         {
             SetMarginCallModel(new MarginCallModelPythonWrapper(pyObject));
         }
+#endif
     }
 }

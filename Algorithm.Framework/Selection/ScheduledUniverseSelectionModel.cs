@@ -16,7 +16,9 @@
 using System;
 using System.Collections.Generic;
 using NodaTime;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Interfaces;
 using QuantConnect.Scheduling;
@@ -72,6 +74,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
             _initializer = initializer;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledUniverseSelectionModel"/> class using the algorithm's time zone
         /// </summary>
@@ -111,7 +114,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
             _settings = settings;
             _initializer = initializer;
         }
-
+#endif
         /// <summary>
         /// Creates the universes for this algorithm. Called once after <see cref="IAlgorithm.Initialize"/>
         /// </summary>

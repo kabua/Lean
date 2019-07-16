@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+#if SUPPORT_PY
 
 using System;
 using NUnit.Framework;
@@ -58,7 +59,7 @@ namespace QuantConnect.Tests.Common.Orders.Fills
             _security.SetLocalTimeKeeper(timeKeeper.GetLocalTimeKeeper(TimeZones.NewYork));
         }
 
-        #region InheritImmediateFillModel
+#region InheritImmediateFillModel
 
         [Test]
         public void InheritImmediateFillModel_MarketFill()
@@ -74,9 +75,9 @@ namespace QuantConnect.Tests.Common.Orders.Fills
             Assert.AreEqual(OrderStatus.Filled, result.OrderEvent.Status);
         }
 
-        #endregion
+#endregion
 
-        #region OldFillInterfaceModelTests
+#region OldFillInterfaceModelTests
 
         [Test]
         public void OldInterface_MarketFill()
@@ -162,9 +163,9 @@ namespace QuantConnect.Tests.Common.Orders.Fills
             Assert.AreEqual(orderEvent, result.OrderEvent);
         }
 
-        #endregion
+#endregion
 
-        #region OldBaseFillModelTests
+#region OldBaseFillModelTests
 
         [Test]
         public void OldBaseFillModel_DoesNotOverride_MarketFill()
@@ -279,9 +280,9 @@ namespace QuantConnect.Tests.Common.Orders.Fills
             Assert.AreEqual(12345, result.OrderEvent.FillPrice);
         }
 
-        #endregion
+#endregion
 
-        #region Python
+#region Python
 
         [Test]
         public void OldImmediateFillModelModel_MarketFill_Py()
@@ -502,7 +503,7 @@ namespace QuantConnect.Tests.Common.Orders.Fills
             }
         }
 
-        #endregion
+#endregion
 
         private class TestFillModelInheritInterface : IFillModel
         {
@@ -664,3 +665,5 @@ namespace QuantConnect.Tests.Common.Orders.Fills
         }
     }
 }
+
+#endif

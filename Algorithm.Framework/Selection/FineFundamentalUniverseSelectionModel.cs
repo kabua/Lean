@@ -15,7 +15,9 @@
 
 using System;
 using System.Collections.Generic;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Data.Fundamental;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Securities;
@@ -49,6 +51,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
             _fineSelector = fineSelector;
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Initializes a new instance of the <see cref="FineFundamentalUniverseSelectionModel"/> class
         /// </summary>
@@ -73,7 +76,7 @@ namespace QuantConnect.Algorithm.Framework.Selection
                 _coarseSelector = coarseFunc;
             }
         }
-
+#endif
         /// <inheritdoc />
         public override IEnumerable<Symbol> SelectCoarse(QCAlgorithm algorithm, IEnumerable<CoarseFundamental> coarse)
         {

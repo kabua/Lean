@@ -13,6 +13,8 @@
  * limitations under the License.
 */
 
+#if SUPPORT_PY
+
 using Python.Runtime;
 using QuantConnect.Data;
 using QuantConnect.Data.UniverseSelection;
@@ -104,3 +106,5 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         }
     }
 }
+
+#endif

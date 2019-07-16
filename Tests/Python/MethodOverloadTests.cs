@@ -17,7 +17,9 @@
 using System;
 using NUnit.Framework;
 using Python.Runtime;
+#if SUPPORT_PY
 using QuantConnect.Python;
+#endif
 using QuantConnect.Tests.Engine.DataFeeds;
 
 namespace QuantConnect.Tests.Python
@@ -33,8 +35,9 @@ namespace QuantConnect.Tests.Python
         [SetUp]
         public void Setup()
         {
+#if SUPPORT_PY
             PythonInitializer.Initialize();
-
+#endif
             using (Py.GIL())
             {
                 var module = Py.Import("Test_MethodOverload");

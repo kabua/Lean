@@ -27,7 +27,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NodaTime;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Orders;
 using QuantConnect.Securities;
 using Timer = System.Timers.Timer;
@@ -39,6 +41,7 @@ namespace QuantConnect
     /// </summary>
     public static class Extensions
     {
+#if SUPPORT_PY
         /// <summary>
         /// Helper method that will cast the provided <see cref="PyObject"/>
         /// to a T type and dispose of it.
@@ -58,7 +61,7 @@ namespace QuantConnect
             instance.Dispose();
             return returnInstance;
         }
-
+#endif
         /// <summary>
         /// Extension to move one element from list from A to position B.
         /// </summary>
@@ -1191,6 +1194,7 @@ namespace QuantConnect
             }
         }
 
+#if SUPPORT_PY
         /// <summary>
         /// Returns a <see cref="string"/> that represents the current <see cref="PyObject"/>
         /// </summary>
@@ -1391,7 +1395,7 @@ namespace QuantConnect
                 }
             }
         }
-
+#endif
         /// <summary>
         /// Performs on-line batching of the specified enumerator, emitting chunks of the requested batch size
         /// </summary>

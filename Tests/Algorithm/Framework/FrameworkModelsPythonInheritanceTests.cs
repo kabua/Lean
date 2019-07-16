@@ -13,6 +13,7 @@
  * limitations under the License.
  *
 */
+#if SUPPORT_PY
 
 using NUnit.Framework;
 using Python.Runtime;
@@ -103,3 +104,4 @@ class MockUniverseSelectionModel(FundamentalUniverseSelectionModel):
         }
     }
 }
+#endif

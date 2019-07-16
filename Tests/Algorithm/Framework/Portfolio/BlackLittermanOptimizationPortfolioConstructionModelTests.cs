@@ -226,6 +226,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Portfolio
         private void SetPortfolioConstruction(Language language)
         {
             _algorithm.SetPortfolioConstruction(new BLOPCM(new UnconstrainedMeanVariancePortfolioOptimizer()));
+#if SUPPORT_PY
             if (language == Language.Python)
             {
                 try
@@ -243,7 +244,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Portfolio
                     Assert.Ignore(e.Message);
                 }
             }
-
+#endif
             var changes = SecurityChanges.Added(_algorithm.Securities.Values.ToList().ToArray());
             _algorithm.PortfolioConstruction.OnSecuritiesChanged(_algorithm, changes);
         }
@@ -312,7 +313,7 @@ class BLOPCM(BlackLittermanOptimizationPortfolioConstructionModel):
 
     def get_equilibrium_return(self, returns):
 
-        # Take the values from He & Litterman, 1999.
+# Take the values from He & Litterman, 1999.
         weq = np.array([0.016, 0.022, 0.052, 0.055, 0.116, 0.124, 0.615])
         C = np.array([[ 1.000, 0.488, 0.478, 0.515, 0.439, 0.512, 0.491],
                        [0.488, 1.000, 0.664, 0.655, 0.310, 0.608, 0.779],
@@ -326,7 +327,7 @@ class BLOPCM(BlackLittermanOptimizationPortfolioConstructionModel):
         assets= [GetSymbol(x) for x in ['AUS', 'CAN', 'FRA', 'GER', 'JAP', 'UK', 'USA']]
         delta = 2.5
 
-        # Equilibrium covariance matrix
+# Equilibrium covariance matrix
         V = np.multiply(np.outer(Sigma,Sigma), C)
 
         return weq.dot(V * delta), pd.DataFrame(V, columns=assets, index=assets)

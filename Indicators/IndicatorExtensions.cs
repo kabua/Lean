@@ -16,7 +16,9 @@
 using System;
 using System.Globalization;
 using QuantConnect.Data;
+#if SUPPORT_PY
 using Python.Runtime;
+#endif
 using QuantConnect.Util;
 
 namespace QuantConnect.Indicators
@@ -338,6 +340,7 @@ namespace QuantConnect.Indicators
         }
 
 
+#if SUPPORT_PY
 
         /// The methods overloads bellow are due to python.net not being able to correctly solve generic methods overload
 
@@ -566,5 +569,6 @@ namespace QuantConnect.Indicators
             }
             return Plus(indicatorLeft, indicatorRight, name);
         }
+#endif
     }
 }
