@@ -31,6 +31,7 @@ namespace QuantConnect.Tests.Algorithm
             SymbolCache.TryRemove(Sym);
         }
 
+#if SUPPORT_FXCM
         /// <summary>
         /// The default market for FOREX should be FXCM
         /// </summary>
@@ -43,7 +44,7 @@ namespace QuantConnect.Tests.Algorithm
             Assert.IsTrue(forex.Symbol.ID.Market == Market.FXCM);
             Assert.IsTrue(_algo.BrokerageModel.GetType() == typeof(DefaultBrokerageModel));
         }
-
+#endif
         /// <summary>
         /// The default market for equities should be USA
         /// </summary>

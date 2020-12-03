@@ -11,7 +11,7 @@ nuget pack .\Algorithm.Framework\QuantConnect.Algorithm.Framework.csproj %args%
 nuget pack .\AlgorithmFactory\QuantConnect.AlgorithmFactory.csproj %args%
 nuget pack .\Api\QuantConnect.Api.csproj %args%
 nuget pack .\Brokerages\QuantConnect.Brokerages.csproj %args%
-nuget pack .\Common\QuantConnect.Common.nuspec %args%
+nuget pack .\Common\QuantConnect.csproj %args%
 nuget pack .\Compression\QuantConnect.Compression.csproj %args%
 nuget pack .\Configuration\QuantConnect.Configuration.csproj %args%
 nuget pack .\Engine\QuantConnect.Lean.Engine.csproj %args%

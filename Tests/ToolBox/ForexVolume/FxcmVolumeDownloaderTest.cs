@@ -1,4 +1,6 @@
-﻿using Ionic.Zip;
+﻿#if SUPPORT_FXCM
+
+using Ionic.Zip;
 using NodaTime;
 using NUnit.Framework;
 using QuantConnect.Data;
@@ -154,3 +156,5 @@ namespace QuantConnect.Tests.ToolBox
         }
     }
 }
+
+#endif

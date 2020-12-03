@@ -31,8 +31,8 @@ namespace QuantConnect.Tests.Algorithm
     {
         private const string Ticker = "EURUSD";
         private const Resolution Resolution = QuantConnect.Resolution.Second;
-        private const string Market = QuantConnect.Market.FXCM;
-        private const BrokerageName BrokerageName = QuantConnect.Brokerages.BrokerageName.FxcmBrokerage;
+        private const string Market = QuantConnect.Market.Oanda;
+        private const BrokerageName BrokerageName = QuantConnect.Brokerages.BrokerageName.OandaBrokerage;
         private const int RoundingPrecision = 20;
         private readonly MarketOrder _order = new MarketOrder { Quantity = 1000 };
 
@@ -46,7 +46,7 @@ namespace QuantConnect.Tests.Algorithm
 
             // Leverage and FeeModel from BrokerageModel
             Assert.AreEqual(50, Math.Round(security.Leverage, RoundingPrecision));
-            Assert.IsInstanceOf(typeof(FxcmFeeModel), security.FeeModel);
+            Assert.IsInstanceOf(typeof(), security.FeeModel);
             var fee = security.FeeModel.GetOrderFee(
                 new OrderFeeParameters(security, _order));
             Assert.AreEqual(0.04, fee.Value.Amount);

@@ -1074,7 +1074,11 @@ namespace QuantConnect.Tests.Algorithm
             algo.AddSecurity(SecurityType.Forex, "EURUSD");
             algo.SetCash(100000);
             algo.SetCash("BTC", 0, 8000);
+#if SUPPORT_FXCM
             algo.SetBrokerageModel(BrokerageName.FxcmBrokerage);
+#else
+            algo.SetBrokerageModel(BrokerageName.OandaBrokerage);
+#endif
             algo.Securities[Symbols.EURUSD].FeeModel = new ConstantFeeModel(0);
             Security eurusd = algo.Securities[Symbols.EURUSD];
             // Set Price to $26
@@ -1099,7 +1103,11 @@ namespace QuantConnect.Tests.Algorithm
             algo.SubscriptionManager.SetDataManager(new DataManagerStub(algo));
             algo.AddSecurity(SecurityType.Forex, "EURUSD");
             algo.SetCash(100000);
+#if SUPPORT_FXCM
             algo.SetBrokerageModel(BrokerageName.FxcmBrokerage);
+#else
+            algo.SetBrokerageModel(BrokerageName.OandaBrokerage);
+#endif
             algo.Securities[Symbols.EURUSD].FeeModel = new ConstantFeeModel(0);
             Security eurusd = algo.Securities[Symbols.EURUSD];
             // Set Price to $26
@@ -1124,7 +1132,11 @@ namespace QuantConnect.Tests.Algorithm
             algo.SubscriptionManager.SetDataManager(new DataManagerStub(algo));
             algo.AddSecurity(SecurityType.Forex, "EURUSD");
             algo.SetCash(10000);
+#if SUPPORT_FXCM
             algo.SetBrokerageModel(BrokerageName.FxcmBrokerage);
+#else
+            algo.SetBrokerageModel(BrokerageName.OandaBrokerage);
+#endif
             algo.Securities[Symbols.EURUSD].FeeModel = new ConstantFeeModel(0);
             Security eurusd = algo.Securities[Symbols.EURUSD];
             // Set Price to $25

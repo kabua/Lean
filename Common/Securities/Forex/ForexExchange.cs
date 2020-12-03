@@ -30,12 +30,23 @@ namespace QuantConnect.Securities.Forex
             get { return 313; }
         }
 
+#if SUPPORT_FXCM
         /// <summary>
         /// Initializes a new instance of the <see cref="ForexExchange"/> class using market hours
         /// derived from the market-hours-database for the FXCM Forex market
         /// </summary>
+#else
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ForexExchange"/> class using market hours
+        /// derived from the market-hours-database for the Oanda Forex market
+        /// </summary>
+#endif
         public ForexExchange()
+#if SUPPORT_FXCM
             : base(MarketHoursDatabase.FromDataFolder().GetExchangeHours(Market.FXCM, null, SecurityType.Forex))
+#else
+            : base(MarketHoursDatabase.FromDataFolder().GetExchangeHours(Market.Oanda, null, SecurityType.Forex))
+#endif
         {
         }
 

@@ -33,7 +33,9 @@ namespace QuantConnect
         {
             Tuple.Create("empty", 0),
             Tuple.Create(USA, 1),
+#if SUPPORT_FXCM
             Tuple.Create(FXCM, 2),
+#endif
             Tuple.Create(Oanda, 3),
             Tuple.Create(Dukascopy, 4),
             Tuple.Create(Bitfinex, 5),
@@ -77,11 +79,12 @@ namespace QuantConnect
         /// </summary>
         public const string Oanda = "oanda";
 
+#if SUPPORT_FXCM
         /// <summary>
         /// FXCM Market Hours
         /// </summary>
         public const string FXCM = "fxcm";
-
+#endif
         /// <summary>
         /// Dukascopy Market
         /// </summary>

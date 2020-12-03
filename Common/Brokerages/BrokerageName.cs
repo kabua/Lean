@@ -46,11 +46,12 @@ namespace QuantConnect.Brokerages
         /// </summary>
         OandaBrokerage,
 
+#if SUPPORT_FXCM
         /// <summary>
         /// Transaction and submit/execution rules will use fxcm models
         /// </summary>
         FxcmBrokerage,
-
+#endif
         /// <summary>
         /// Transaction and submit/execution rules will use bitfinex models
         /// </summary>

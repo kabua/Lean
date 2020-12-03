@@ -344,12 +344,15 @@ namespace QuantConnect.ToolBox.IQFeed
 
                         break;
 
-                    case "FOREX":
+#if  SUPPORT_FXCM
+                case "FOREX":
 
                         // we use FXCM symbols only
                         if (columns[columnSymbol].EndsWith(".FXCM"))
                         {
                             var symbol = columns[columnSymbol].Replace(".FXCM", string.Empty);
+
+                            string market = Market.FXCM;
 
                             symbolUniverse.Add(new SymbolData
                             {
@@ -360,8 +363,9 @@ namespace QuantConnect.ToolBox.IQFeed
                             });
                         }
                         break;
+#endif
 
-                    case "FUTURE":
+                case "FUTURE":
 
                         // we are not interested in designated continuous contracts
                         if (columns[columnSymbol].EndsWith("#"))

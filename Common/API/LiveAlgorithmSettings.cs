@@ -174,6 +174,7 @@ namespace QuantConnect.API
         }
     }
 
+#if SUPPORT_FXCM
     /// <summary>
     /// Algorithm setting for trading with FXCM
     /// </summary>
@@ -197,6 +198,7 @@ namespace QuantConnect.API
         }
 
     }
+#endif
 
     /// <summary>
     /// Live algorithm settings for trading with Interactive Brokers

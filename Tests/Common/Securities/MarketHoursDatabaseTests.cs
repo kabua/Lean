@@ -112,6 +112,7 @@ namespace QuantConnect.Tests.Common.Securities
             Assert.AreEqual(earlyCloseTime, equityHours.EarlyCloses[date]);
         }
 
+#if SUPPORT_FXCM
         [Test]
         public void CorrectlyReadFxcmForexMarketHours()
         {
@@ -146,6 +147,7 @@ namespace QuantConnect.Tests.Common.Securities
                 }
             }
         }
+#endif
 
         [Test]
         public void ReadsUsEquityDataTimeZone()
@@ -156,6 +158,7 @@ namespace QuantConnect.Tests.Common.Securities
             Assert.AreEqual(TimeZones.NewYork, marketHoursDatabase.GetDataTimeZone(Market.USA, null, SecurityType.Equity));
         }
 
+#if SUPPORT_FXCM
         [Test]
         public void ReadsFxcmForexDataTimeZone()
         {
@@ -164,6 +167,7 @@ namespace QuantConnect.Tests.Common.Securities
 
             Assert.AreEqual(TimeZones.EasternStandard, marketHoursDatabase.GetDataTimeZone(Market.FXCM, null, SecurityType.Forex));
         }
+#endif
 
         private static MarketHoursDatabase GetMarketHoursDatabase(string file)
         {

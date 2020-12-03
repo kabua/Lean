@@ -66,16 +66,28 @@ namespace QuantConnect.Algorithm.CSharp
 
             if (dateTime.DayOfWeek == DayOfWeek.Tuesday || dateTime.DayOfWeek == DayOfWeek.Thursday)
             {
+#if SUPPORT_FXCM
                 yield return QuantConnect.Symbol.Create("EURUSD", SecurityType.Forex, Market.FXCM);
+#else
+                yield return QuantConnect.Symbol.Create("EURUSD", SecurityType.Forex, Market.Oanda);
+#endif
             }
             else if (dateTime.DayOfWeek == DayOfWeek.Friday)
             {
                 // given the date/time rules specified in Initialize, this symbol will never be selected (every 6 hours never lands on hour==1)
+#if SUPPORT_FXCM
                 yield return QuantConnect.Symbol.Create("EURGBP", SecurityType.Forex, Market.FXCM);
+#else
+                yield return QuantConnect.Symbol.Create("EURGBP", SecurityType.Forex, Market.Oanda);
+#endif
             }
             else
             {
+#if SUPPORT_FXCM
                 yield return QuantConnect.Symbol.Create("NZDUSD", SecurityType.Forex, Market.FXCM);
+#else
+                yield return QuantConnect.Symbol.Create("NZDUSD", SecurityType.Forex, Market.Oanda);
+#endif
             }
         }
 

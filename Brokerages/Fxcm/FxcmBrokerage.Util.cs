@@ -18,8 +18,10 @@ using com.fxcm.entity;
 using com.fxcm.fix;
 using com.fxcm.fix.posttrade;
 using com.fxcm.fix.trade;
+#if SUPPORT_JAVA
 using com.sun.rowset;
 using java.util;
+#endif
 using NodaTime;
 using QuantConnect.Orders;
 

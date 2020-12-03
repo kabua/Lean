@@ -181,10 +181,10 @@ namespace QuantConnect.Brokerages
 
                 case BrokerageName.OandaBrokerage:
                     return new OandaBrokerageModel(accountType);
-
-                case BrokerageName.FxcmBrokerage:
+#if SUPPORT_FXCM
+            case BrokerageName.FxcmBrokerage:
                     return new FxcmBrokerageModel(accountType);
-
+#endif
                 case BrokerageName.Bitfinex:
                     return new BitfinexBrokerageModel(accountType);
 

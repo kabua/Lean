@@ -287,7 +287,11 @@ namespace QuantConnect.ToolBox.IQFeed
 
             return
                 (securityType == SecurityType.Equity && market == Market.USA) ||
+#if SUPPORT_FXCM
                 (securityType == SecurityType.Forex && market == Market.FXCM) ||
+#else
+                (securityType == SecurityType.Forex && market == Market.Oanda) ||
+#endif
                 (securityType == SecurityType.Option && market == Market.USA) ||
                 (securityType == SecurityType.Future);
         }
@@ -574,7 +578,11 @@ namespace QuantConnect.ToolBox.IQFeed
             var securityType = symbol.ID.SecurityType;
             return
                 (securityType == SecurityType.Equity && market == Market.USA) ||
+#if SUPPORT_FXCM
                 (securityType == SecurityType.Forex && market == Market.FXCM) ||
+#else
+                (securityType == SecurityType.Forex && market == Market.Oanda) ||
+#endif
                 (securityType == SecurityType.Option && market == Market.USA) ||
                 (securityType == SecurityType.Future);
         }

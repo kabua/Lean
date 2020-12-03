@@ -207,14 +207,12 @@
     <Compile Include="Brokerages\DefaultBrokerageMessageHandler.cs" />
     <Compile Include="Brokerages\DefaultBrokerageModel.cs" />
     <Compile Include="Brokerages\DowngradeErrorCodeToWarningBrokerageMessageHandler.cs" />
-    <Compile Include="Brokerages\FxcmBrokerageModel.cs" />
     <Compile Include="Brokerages\BitfinexBrokerageModel.cs" />
     <Compile Include="Brokerages\GDAXBrokerageModel.cs" />
     <Compile Include="Chart.cs" />
     <Compile Include="ChartPoint.cs" />
     <Compile Include="Data\Consolidators\CalendarType.cs" />
     <Compile Include="Data\Consolidators\FilteredIdentityDataConsolidator.cs" />
-    <Compile Include="Data\Custom\FxcmVolume.cs" />
     <Compile Include="Data\Custom\SEC\ISECReport.cs" />
     <Compile Include="Data\Custom\SEC\SECReportBusinessAddress.cs" />
     <Compile Include="Data\Custom\SEC\SECReportCompanyData.cs" />
@@ -455,7 +453,6 @@
     <Compile Include="Orders\Fees\ConstantFeeModel.cs" />
     <Compile Include="Orders\Fees\GDAXFeeModel.cs" />
     <Compile Include="Orders\Fees\InteractiveBrokersFeeModel.cs" />
-    <Compile Include="Orders\Fees\FxcmFeeModel.cs" />
     <Compile Include="Orders\Fees\IFeeModel.cs" />
     <Compile Include="Orders\Fills\ImmediateFillModel.cs" />
     <Compile Include="Orders\Fills\IFillModel.cs" />

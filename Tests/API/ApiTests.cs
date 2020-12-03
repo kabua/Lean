@@ -313,6 +313,7 @@ namespace QuantConnect.Tests.API
             Assert.IsTrue(liveLogs.Logs.Any());
         }
 
+#if SUPPORT_FXCM
         /// <summary>
         /// Paper trading FXCM
         /// </summary>
@@ -368,6 +369,7 @@ namespace QuantConnect.Tests.API
                 Assert.IsTrue(deleteProject.Success);
             }
         }
+#endif
 
         /// <summary>
         /// Live paper trading via IB.
@@ -539,6 +541,7 @@ namespace QuantConnect.Tests.API
             }
         }
 
+#if SUPPORT_FXCM
         /// <summary>
         /// Test getting links to forex data for FXCM
         /// </summary>
@@ -553,6 +556,7 @@ namespace QuantConnect.Tests.API
             Assert.IsTrue(minuteDataLink.Success);
             Assert.IsTrue(dailyDataLink.Success);
         }
+#endif
 
         /// <summary>
         /// Test getting links to forex data for Oanda
